@@ -63,6 +63,8 @@ public class ChangeNameProfile {
                 Arguments.of("Artem artem artem"),
                 Arguments.of("Artem-artem"));
     }
+
+
     @MethodSource("invalidNamesValues")
     @ParameterizedTest
     public void UpdateCustomerProfileNameAtOneWord(String name) {

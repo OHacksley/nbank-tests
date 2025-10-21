@@ -13,6 +13,7 @@ import static io.restassured.RestAssured.given;
 
 public class GetAllUsers {
 
+
     @BeforeAll
     public static void setupRestAssured() {
         RestAssured.filters(

@@ -40,7 +40,7 @@ public class CreateAccountTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_CREATED);
 
-        //Получаем токен юзера
+        //Получаем токен юзера.
         String userAuthHeader = given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)

@@ -40,7 +40,7 @@ public class LoginUserTest {
 
     @Test
     public void userCanGenerateAuthTokenTest() {
-        //создание пользователя
+        //создание пользователя.
         given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)

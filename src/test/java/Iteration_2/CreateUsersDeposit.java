@@ -74,7 +74,7 @@ public class CreateUsersDeposit {
                         .extract()
                         .path("id");
 
-        //Вносим депозит с корректной суммой
+        //Вносим депозит с корректной суммой.
         given()
                 .header("Authorization", "RGVwbzI6QXJ0ZW0yMDAwJQ==")
                 .contentType(ContentType.JSON)
