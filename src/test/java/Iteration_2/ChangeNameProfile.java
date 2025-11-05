@@ -1,61 +1,52 @@
 package Iteration_2;
 
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
-import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeAll;
+import Iteration_1.BaseTest;
+import generators.RandomData;
+import models.CustomerProfileResponse;
+import models.TestAccData;
+import models.UpdateProfileResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import requests.GetCustomerProfileRequester;
+import requests.UpdateUserProfileRequester;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
-import java.util.List;
 import java.util.stream.Stream;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-
-public class ChangeNameProfile {
-
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(
-                List.of(new RequestLoggingFilter(),
-                        new ResponseLoggingFilter()));
-    }
+public class ChangeNameProfile extends BaseTest {
 
     @Test
     public void UpdateCustomerProfile() {
-        String name = "Artem Artemovov";
-        String authHeader = "Basic VHJhbnNmZXIyOkFydGVtMjAwMCU=";
+        TestAccData user1 = TestDataFactory.createTransferTestData();
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", authHeader)
-                .body(String.format("""
-                        {
-                        "name": "%s"
-                        }
-                        """, name))
-                .when()
-                .put("http://localhost:4111/api/v1/customer/profile")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .body("message", equalTo("Profile updated successfully"))
-                .body("customer.name", equalTo(name));
+        CustomerProfileResponse user1Profile = new GetCustomerProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
+                .get()
+                .extract()
+                .as(CustomerProfileResponse.class);
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", authHeader)
-                .when()
-                .get("http://localhost:4111/api/v1/customer/profile")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .body("name", equalTo(name));
+        String oldUserName = user1Profile.getName();
+        Long oldUserId = user1Profile.getId();
+        String newName = RandomData.getName();
+
+        UpdateProfileResponse updateResponse = new UpdateUserProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
+                .put(newName)
+                .extract()
+                .as(UpdateProfileResponse.class);
+
+        softly.assertThat(updateResponse.getMessage()).isEqualTo("Profile updated successfully");
+        softly.assertThat(updateResponse.getCustomer().getName()).isEqualTo(newName);
+
+        CustomerProfileResponse user1ProfileAfter = new GetCustomerProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
+                .get()
+                .extract()
+                .as(CustomerProfileResponse.class);
+
+        softly.assertThat(user1ProfileAfter.getName()).isEqualTo(newName);
+        softly.assertThat(user1ProfileAfter.getId()).isEqualTo(oldUserId);
+
     }
 
     public static Stream<Arguments> invalidNamesValues() {
@@ -69,32 +60,25 @@ public class ChangeNameProfile {
     @ParameterizedTest
     public void UpdateCustomerProfileNameAtOneWord(String name) {
 
-        String authHeader = "Basic VHJhbnNmZXIyOkFydGVtMjAwMCU=";
+        TestAccData user1 = TestDataFactory.createTransferTestData();
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", authHeader)
-                .body(String.format("""
-                        {
-                        "name": "%s"
-                        }
-                        """, name))
-                .when()
-                .put("http://localhost:4111/api/v1/customer/profile")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .body("message", equalTo("Profile updated successfully"))
-                .body("customer.name", equalTo(name));
+        CustomerProfileResponse user1Profile = new GetCustomerProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
+                .get()
+                .extract()
+                .as(CustomerProfileResponse.class);
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", authHeader)
-                .when()
-                .get("http://localhost:4111/api/v1/customer/profile")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .body("name", equalTo(name));
+        String oldUserName = user1Profile.getName();
+        Long oldUserId = user1Profile.getId();
+
+        new UpdateUserProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsBadRequestWithText("Name must contain two words with letters only"))
+                .put(name);
+
+        CustomerProfileResponse user1ProfileAfter = new GetCustomerProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
+                .get()
+                .extract()
+                .as(CustomerProfileResponse.class);
+
+        softly.assertThat(user1ProfileAfter.getName()).isEqualTo(oldUserName);
+        softly.assertThat(user1ProfileAfter.getId()).isEqualTo(oldUserId);
     }
 }

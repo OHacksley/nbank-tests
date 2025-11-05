@@ -4,12 +4,11 @@ import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import models.BaseModel;
-import models.CreateAccountResponse;
 
 import static io.restassured.RestAssured.given;
 
-public class CreateAccountRequester extends Request {
-    public CreateAccountRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
+public class UserCreateDepositRequester extends Request{
+    public UserCreateDepositRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
         super(requestSpecification, responseSpecification);
     }
 
@@ -17,7 +16,8 @@ public class CreateAccountRequester extends Request {
     public ValidatableResponse post(BaseModel model) {
         return given()
                 .spec(requestSpecification)
-                .post("/api/v1/accounts")
+                .body(model)
+                .post("/api/v1/accounts/deposit")
                 .then()
                 .assertThat()
                 .spec(responseSpecification);

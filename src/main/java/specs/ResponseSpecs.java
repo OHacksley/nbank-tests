@@ -1,9 +1,12 @@
 package specs;
 
 import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.http.ContentType;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
+
+import static org.hamcrest.Matchers.equalTo;
 
 public class ResponseSpecs {
     private ResponseSpecs() {}
@@ -27,7 +30,21 @@ public class ResponseSpecs {
     public static ResponseSpecification requestReturnsBadRequest(String errorKey, String errorValue) {
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
-                .expectBody(errorKey, Matchers.equalTo(errorValue))
+                .expectBody(errorKey, equalTo(errorValue))
                 .build();
     }
+    public static ResponseSpecification requestReturnsBadRequestWithText(String expectedMessage) {
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+                .expectBody(equalTo(expectedMessage))
+                .build();
+    }
+
+    public static ResponseSpecification requestReturnsForbiddenWithText(String expectedMessage) {
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .expectBody(equalTo(expectedMessage))
+                .build();
+    }
+
 }

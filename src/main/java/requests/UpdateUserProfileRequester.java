@@ -4,20 +4,27 @@ import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import models.BaseModel;
-import models.CreateAccountResponse;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 
-public class CreateAccountRequester extends Request {
-    public CreateAccountRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
+public class UpdateUserProfileRequester extends PutRequest{
+    public UpdateUserProfileRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
         super(requestSpecification, responseSpecification);
     }
 
     @Override
-    public ValidatableResponse post(BaseModel model) {
+    public ValidatableResponse put(String newName) {
+
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("name",newName);
+
         return given()
                 .spec(requestSpecification)
-                .post("/api/v1/accounts")
+                .body(requestBody)
+                .put("/api/v1/customer/profile")
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
