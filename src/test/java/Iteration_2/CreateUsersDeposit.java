@@ -1,23 +1,18 @@
 package Iteration_2;
 
 import Iteration_1.BaseTest;
-import generators.RandomData;
-import io.restassured.http.ContentType;
 import models.*;
-import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import requests.GetCustomerProfileRequester;
-import requests.UserCreateDepositRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
@@ -27,45 +22,29 @@ public class CreateUsersDeposit extends BaseTest {
 
     @Test
     public void UsersDepositCorrectSum() {
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequest user1 = AdminSteps.createUser();
+        CreateAccountResponse user1response = AdminSteps.createUserAccount(user1);
 
-        CreateUserResponse createUserResponse = new AdminCreateUserRequester(RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest).extract().as(CreateUserResponse.class);
-
-        CreateAccountResponse accountResponse = new CreateAccountRequester(RequestSpecs.authAsUser(
-                userRequest.getUsername(),
-                userRequest.getPassword()), ResponseSpecs.entityWasCreated())
-                .post(null)
-                .extract()
-                .as(CreateAccountResponse.class);
-
-        Long accountId = accountResponse.getId();
-        String accountNumber = accountResponse.getAccountNumber();
+        Long accountId = user1response.getId();
+        String accountNumber = user1response.getAccountNumber();
 
         DepositRequest depositRequest = DepositRequest.builder()
                 .id(accountId)
                 .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
-        DepositResponse depositResponse = new UserCreateDepositRequester(RequestSpecs.authAsUser(
-                userRequest.getUsername(),
-                userRequest.getPassword()), ResponseSpecs.requestReturnsOK())
-                .post(depositRequest)
-                .extract()
-                .as(DepositResponse.class);
+        DepositResponse depositResponse = new ValidatedCrudRequester<DepositResponse>(Endpoint.DEPOSIT, RequestSpecs.authAsUser(
+                user1.getUsername(),
+                user1.getPassword()), ResponseSpecs.requestReturnsOK())
+                .post(depositRequest);
         //Проверки "основного" тела
         softly.assertThat(depositResponse.getId()).isEqualTo(accountId);
         softly.assertThat(depositResponse.getAccountNumber()).isEqualTo(accountNumber);
         softly.assertThat(depositResponse.getBalance()).isEqualTo(DepositAmount.STANDARD.getValue());
         //Проверки блоков "Транзакции"
         softly.assertThat(depositResponse.getTransactions()).isNotEmpty();
-        softly.assertThat(depositResponse.getTransactions().get(0).getAmount()).isEqualTo(DepositAmount.STANDARD);
-        softly.assertThat(depositResponse.getTransactions().get(0).getType()).isEqualTo(TypeOfOperations.DEPOSIT);
+        softly.assertThat(depositResponse.getTransactions().get(0).getAmount()).isEqualTo(DepositAmount.STANDARD.getValue());
+        softly.assertThat(depositResponse.getTransactions().get(0).getType()).isEqualTo(TypeOfOperations.DEPOSIT.getValue());
 
     }
 
@@ -78,22 +57,9 @@ public class CreateUsersDeposit extends BaseTest {
     @MethodSource("depositInvalidValues")
     @ParameterizedTest
     public void depositWithInvalidData(double balance, String errorValue) {
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
-        CreateUserResponse createUserResponse = new AdminCreateUserRequester(RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest).extract().as(CreateUserResponse.class);
-
-        CreateAccountResponse accountResponse = new CreateAccountRequester(RequestSpecs.authAsUser(
-                userRequest.getUsername(),
-                userRequest.getPassword()), ResponseSpecs.entityWasCreated())
-                .post(null)
-                .extract()
-                .as(CreateAccountResponse.class);
+        CreateAccountResponse accountResponse = AdminSteps.createUserAccount(userRequest);
 
         Long accountId = accountResponse.getId();
         String accountNumber = accountResponse.getAccountNumber();
@@ -103,109 +69,66 @@ public class CreateUsersDeposit extends BaseTest {
                 .balance(balance)
                 .build();
 
-        new UserCreateDepositRequester(RequestSpecs.authAsUser(
+        new CrudRequester(Endpoint.DEPOSIT, RequestSpecs.authAsUser(
                 userRequest.getUsername(),
                 userRequest.getPassword()), ResponseSpecs.requestReturnsBadRequestWithText(errorValue))
                 .post(depositRequest);
 
-        CustomerProfileResponse getProfileResponse = new GetCustomerProfileRequester(RequestSpecs.authAsUser(
+        CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(
                 userRequest.getUsername(),
                 userRequest.getPassword()), ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CustomerProfileResponse.class);
+                .getWithoutId();
 
-        Optional<AccountInfo> targetArgument = getProfileResponse.getAccounts().stream()
-                .filter(acc -> acc.getId().equals(accountId))
-                .findFirst();
-        softly.assertThat(targetArgument.get().getBalance()).isEqualTo(0.0);
+        softly.assertThat(getProfileResponse.getAccounts().get(0).getBalance()).isEqualTo(0.0);
     }
 
 
         @Test
         public void depositToForeignAcc() {
+            CreateUserRequest userRequest = AdminSteps.createUser();
+            CreateUserRequest userRequest2 = AdminSteps.createUser();
 
-        // Создаем 1ого пользователя (аккаунт)
+            CreateAccountResponse accountResponse = AdminSteps.createUserAccount(userRequest);
+            CreateAccountResponse account2Response = AdminSteps.createUserAccount(userRequest2);
 
-            CreateUserRequest account1 = CreateUserRequest.builder()
-                    .username(RandomData.getUsername())
-                    .password(RandomData.getPassword())
-                    .role(UserRole.USER.toString())
-                    .build();
-
-            CreateUserResponse createUser1Response = new AdminCreateUserRequester(RequestSpecs.adminSpec(),
-                    ResponseSpecs.entityWasCreated())
-                    .post(account1).extract().as(CreateUserResponse.class);
-
-            // Создаем 2ого пользователя (аккаунт)
-
-            CreateUserRequest account2 = CreateUserRequest.builder()
-                    .username(RandomData.getUsername())
-                    .password(RandomData.getPassword())
-                    .role(UserRole.USER.toString())
-                    .build();
-
-            CreateUserResponse createUser2Response = new AdminCreateUserRequester(RequestSpecs.adminSpec(),
-                    ResponseSpecs.entityWasCreated())
-                    .post(account2).extract().as(CreateUserResponse.class);
-
-            // Создаем счет для второго пользователя и получаем его id
-
-            CreateAccountResponse account2Response = new CreateAccountRequester(RequestSpecs.authAsUser(
-                    account2.getUsername(),
-                    account2.getPassword()), ResponseSpecs.entityWasCreated())
-                    .post(null)
-                    .extract()
-                    .as(CreateAccountResponse.class);
-
+            Long accountId = accountResponse.getId();
             Long account2Id = account2Response.getId();
 
-            //Логинимся под 1 пользователем и выполняем депозит на второй аккаунт
             DepositRequest depositRequest = DepositRequest.builder()
                     .id(account2Id)
                     .balance(DepositAmount.STANDARD.getValue())
                     .build();
 
-            new UserCreateDepositRequester(RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()), ResponseSpecs.requestReturnsForbiddenWithText("Unauthorized access to account"))
+            new CrudRequester(Endpoint.DEPOSIT,
+                    RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                    ResponseSpecs.requestReturnsForbiddenWithText(Message_And_Errors_text.DEPOSIT_FORBIDDEN.getValue()))
                     .post(depositRequest);
 
-            //Логинимся под вторым аккаунтом
+            CustomerProfileResponse checkBalance = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                    RequestSpecs.authAsUser(userRequest2.getUsername(),
+                            userRequest2.getPassword()), ResponseSpecs.requestReturnsOK())
+                    .getWithoutId();
 
-            CustomerProfileResponse getProfileResponse = new GetCustomerProfileRequester(RequestSpecs.authAsUser(
-                    account2.getUsername(),
-                    account2.getPassword()), ResponseSpecs.requestReturnsOK())
-                    .get()
-                    .extract()
-                    .as(CustomerProfileResponse.class);
+            softly.assertThat(checkBalance.getAccounts().get(0).getBalance()).isEqualTo(0L);
 
-            //Проверяем баланс 2ого аккаунта
-
-            Optional<AccountInfo> targetArgument = getProfileResponse.getAccounts().stream()
-                    .filter(acc -> acc.getId().equals(account2Id))
-                    .findFirst();
-            softly.assertThat(targetArgument.get().getBalance()).isEqualTo(0L);
     }
 
     @Test
     public void depositToIncorrectAcc() {
         // Создаем 1ого пользователя (аккаунт)
 
-        CreateUserRequest account1 = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        CreateUserResponse createUser1Response = new AdminCreateUserRequester(RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(account1).extract().as(CreateUserResponse.class);
+        CreateUserRequest account1 = AdminSteps.createUser();
+        CreateAccountResponse accountResponse = AdminSteps.createUserAccount(account1);
 
         DepositRequest depositRequest = DepositRequest.builder()
                 .id(0L)
                 .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
-        new UserCreateDepositRequester(RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()), ResponseSpecs.requestReturnsBadRequestWithText("Account not found"))
+        new CrudRequester(Endpoint.DEPOSIT,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsBadRequestWithText(Message_And_Errors_text.DEPOSIT_ACC_NOT_FOUND.getValue()))
                 .post(depositRequest);
 
     }

@@ -15,6 +15,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import requests.*;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 import static Iteration_2.TransfersDataHelper.*;
@@ -33,47 +37,21 @@ public class CreateUserTransfers extends BaseTest {
 
         // Создаем 1ого пользователя (аккаунт)
 
-        CreateUserRequest account1 = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        CreateUserResponse createUser1Response = new AdminCreateUserRequester(RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(account1).extract().as(CreateUserResponse.class);
+        CreateUserRequest account1 = AdminSteps.createUser();
 
         // Создаем 2ого пользователя (аккаунт)
 
-        CreateUserRequest account2 = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        CreateUserResponse createUser2Response = new AdminCreateUserRequester(RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(account2).extract().as(CreateUserResponse.class);
+        CreateUserRequest account2 = AdminSteps.createUser();
 
         // Создаем счет для первого пользователя и получаем его id
 
-        CreateAccountResponse account1Response = new CreateAccountRequester(RequestSpecs.authAsUser(
-                account1.getUsername(),
-                account1.getPassword()), ResponseSpecs.entityWasCreated())
-                .post(null)
-                .extract()
-                .as(CreateAccountResponse.class);
+        CreateAccountResponse account1Response = AdminSteps.createUserAccount(account1);
 
         Long account1Id = account1Response.getId();
 
         // Создаем счет для второго пользователя и получаем его id
 
-        CreateAccountResponse account2Response = new CreateAccountRequester(RequestSpecs.authAsUser(
-                account2.getUsername(),
-                account2.getPassword()), ResponseSpecs.entityWasCreated())
-                .post(null)
-                .extract()
-                .as(CreateAccountResponse.class);
+        CreateAccountResponse account2Response = AdminSteps.createUserAccount(account2);
 
         Long account2Id = account2Response.getId();
 
@@ -83,10 +61,14 @@ public class CreateUserTransfers extends BaseTest {
                 .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
-        new UserCreateDepositRequester(RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()), ResponseSpecs.requestReturnsOK())
+        new CrudRequester(Endpoint.DEPOSIT,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsOK())
                 .post(depositRequest);
 
-        new UserCreateDepositRequester(RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()), ResponseSpecs.requestReturnsOK())
+        new CrudRequester(Endpoint.DEPOSIT,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsOK())
                 .post(depositRequest);
 
         //Совершаем трансфер с 1 аккаунта на 2ой
@@ -98,22 +80,21 @@ public class CreateUserTransfers extends BaseTest {
                 .amount(DepositAmount.STANDARD_TRANSFER.getValue())
                 .build();
 
-        TransferResponse transferResponse = new UserCreateTransferRequester(RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()), ResponseSpecs.requestReturnsOK())
-                .post(transferRequest)
-                .extract()
-                .as(TransferResponse.class);
+        TransferResponse transferResponse = new ValidatedCrudRequester<TransferResponse>(Endpoint.TRANSFER,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .post(transferRequest);
 
-        softly.assertThat(transferResponse.getMessage()).isEqualTo("Transfer successful");
+        softly.assertThat(transferResponse.getMessage()).isEqualTo(Message_And_Errors_text.TRANSFER_SUCCES);
         softly.assertThat(transferResponse.getAmount()).isEqualTo(DepositAmount.STANDARD_TRANSFER.getValue());
 
         //Логинимся под 2 пользователем, проверяем баланс
 
-        CustomerProfileResponse getProfileResponse = new GetCustomerProfileRequester(RequestSpecs.authAsUser(
+        CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(
                 account2.getUsername(),
                 account2.getPassword()), ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CustomerProfileResponse.class);
+                .getWithoutId();
 
         //Проверяем баланс 2ого аккаунта
 
@@ -125,76 +106,111 @@ public class CreateUserTransfers extends BaseTest {
     }
 
     public static Stream<Arguments> transferInvalidValues() {
-        return Stream.of(Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.NEGATIVE.getValue(), "Transfer amount must be at least 0.01"),
-                Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.ZERO.getValue(), "Transfer amount must be at least 0.01"),
-                Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.LARGE_TRANSFER.getValue(), "Transfer amount cannot exceed 10000"));
+        return Stream.of(Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.NEGATIVE.getValue(), Message_And_Errors_text.TRANSFER_LEAST),
+                Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.ZERO.getValue(), Message_And_Errors_text.TRANSFER_EXCEED),
+                Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.LARGE_TRANSFER.getValue(), Message_And_Errors_text.TRANSFER_EXCEED));
     }
 
     @MethodSource("transferInvalidValues")
     @ParameterizedTest
-    public void transferWithInvalidData(Long senderAccountId, Long receiverAccountId, Double amount, String errorValue) {
+    public void transferWithInvalidData(Double amount, String errorValue) {
 
-        TransfersDataHelper.depositToAccount(USER_1_ID, DepositAmount.STANDARD.getValue(), USER_1_USERNAME, USER_1_PASSWORD);
-        TransfersDataHelper.depositToAccount(USER_1_ID, DepositAmount.STANDARD.getValue(), USER_1_USERNAME, USER_1_PASSWORD);
+        CreateUserRequest account1 = AdminSteps.createUser();
+
+        CreateAccountResponse account1Response = AdminSteps.createUserAccount(account1);
+
+        Long account1Id = account1Response.getId();
+
+        CreateUserRequest account2 = AdminSteps.createUser();
+
+        CreateAccountResponse account2Response = AdminSteps.createUserAccount(account2);
+
+        Long account2Id = account2Response.getId();
+
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(account1Id)
+                .balance(DepositAmount.STANDARD.getValue())
+                .build();
+
+        new CrudRequester(Endpoint.DEPOSIT,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .post(depositRequest);
 
         TransferRequest transferRequest = TransferRequest.builder()
-                .receiverAccountId(receiverAccountId)
-                .senderAccountId(senderAccountId)
+                .receiverAccountId(account2Id)
+                .senderAccountId(account1Id)
                 .amount(amount)
                 .build();
 
-        new UserCreateTransferRequester(RequestSpecs.authAsUser(USER_1_USERNAME, USER_1_PASSWORD), ResponseSpecs.requestReturnsBadRequestWithText(errorValue))
+        new CrudRequester(Endpoint.TRANSFER,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsBadRequestWithText(errorValue))
                 .post(transferRequest);
 
-        CustomerProfileResponse getProfileResponse = new GetCustomerProfileRequester(RequestSpecs.authAsUser(USER_1_USERNAME, USER_1_PASSWORD), ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CustomerProfileResponse.class);
+        CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
 
         //Проверяем баланс 1ого аккаунта
 
         Optional<AccountInfo> targetArgument = getProfileResponse.getAccounts().stream()
-                .filter(acc -> acc.getId().equals(USER_1_ID))
+                .filter(acc -> acc.getId().equals(account1Id))
                 .findFirst();
         softly.assertThat(targetArgument.isPresent()).isTrue();
-        softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD_TRANSFER);
+        softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD);
 
     }
 
     @Test
     public void transferWithBalanceLessTransferSumm() {
-        //создаем 2 аккаунта и счета
-        TestAccData testAccData = TestDataFactory.createTransferTestData();
+        CreateUserRequest account1 = AdminSteps.createUser();
 
-        //Депозит на 1 акк 5000
+        CreateAccountResponse account1Response = AdminSteps.createUserAccount(account1);
 
-        TransfersDataHelper.depositToAccount(testAccData.getAccount1Id(), DepositAmount.STANDARD.getValue(), testAccData.getUser1Username(), testAccData.getUser1Password());
+        Long account1Id = account1Response.getId();
 
+        CreateUserRequest account2 = AdminSteps.createUser();
 
-TransferRequest transferRequest = TransferRequest.builder()
-        .receiverAccountId(testAccData.getAccount2Id())
-        .senderAccountId(testAccData.getAccount1Id())
-        .amount(DepositAmount.STANDARD_TRANSFER.getValue())
-        .build();
+        CreateAccountResponse account2Response = AdminSteps.createUserAccount(account2);
 
-//Трансфер на 10000 и проврека ошибки
+        Long account2Id = account2Response.getId();
 
-        new UserCreateTransferRequester(RequestSpecs.authAsUser(testAccData.getUser1Username(), testAccData.getUser1Password()), ResponseSpecs.requestReturnsBadRequestWithText("Invalid transfer: insufficient funds or invalid accounts"))
-        .post(transferRequest);
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(account1Id)
+                .balance(DepositAmount.STANDARD.getValue())
+                .build();
 
-        //проверка баланса акк 1
+        new CrudRequester(Endpoint.DEPOSIT,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .post(depositRequest);
 
-        CustomerProfileResponse profileResponse = new GetCustomerProfileRequester(RequestSpecs.authAsUser(testAccData.getUser1Username(), testAccData.getUser1Password()), ResponseSpecs.requestReturnsOK())
-        .get()
-        .extract()
-        .as(CustomerProfileResponse.class);
+        TransferRequest transferRequest = TransferRequest.builder()
+                .receiverAccountId(account2Id)
+                .senderAccountId(account1Id)
+                .amount(DepositAmount.STANDARD_TRANSFER.getValue())
+                .build();
 
-Optional<AccountInfo> accInfo = profileResponse.getAccounts().stream()
-        .filter(acc ->acc.getId().equals(testAccData.getAccount1Id()))
-        .findFirst();
+        new CrudRequester(Endpoint.TRANSFER,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsBadRequestWithText(Message_And_Errors_text.TRANSFER_INVALID.getValue()))
+                .post(transferRequest);
 
-        softly.assertThat(accInfo.isPresent()).isTrue();
-        softly.assertThat(accInfo.get().getBalance()).isEqualTo(DepositAmount.STANDARD.getValue());
+        CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
+
+        //Проверяем баланс 1ого аккаунта
+
+        Optional<AccountInfo> targetArgument = getProfileResponse.getAccounts().stream()
+                .filter(acc -> acc.getId().equals(account1Id))
+                .findFirst();
+        softly.assertThat(targetArgument.isPresent()).isTrue();
+        softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD);
+
     }
 }
 

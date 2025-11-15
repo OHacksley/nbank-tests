@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AccountInfo {
+public class AccountInfo extends BaseModel{
 
     private Long id;
     private String accountNumber;

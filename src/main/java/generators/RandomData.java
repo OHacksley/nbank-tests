@@ -1,8 +1,9 @@
 package generators;
 
+import models.BaseModel;
 import org.apache.commons.lang3.RandomStringUtils;
 
-public class RandomData {
+public class RandomData extends BaseModel {
     private RandomData() {
     }
 

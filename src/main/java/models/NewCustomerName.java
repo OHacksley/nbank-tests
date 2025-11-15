@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UpdateProfileResponse extends BaseModel {
-
-    private String message;
-    private CustomerProfileResponse customer;
+public class NewCustomerName extends BaseModel{
+    private String newName;
 }

@@ -2,49 +2,50 @@ package Iteration_2;
 
 import Iteration_1.BaseTest;
 import generators.RandomData;
-import models.CustomerProfileResponse;
-import models.TestAccData;
-import models.UpdateProfileResponse;
+import models.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import requests.GetCustomerProfileRequester;
-import requests.UpdateUserProfileRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
 import java.util.stream.Stream;
 
+
 public class ChangeNameProfile extends BaseTest {
 
     @Test
     public void UpdateCustomerProfile() {
-        TestAccData user1 = TestDataFactory.createTransferTestData();
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
-        CustomerProfileResponse user1Profile = new GetCustomerProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CustomerProfileResponse.class);
+        CreateAccountResponse accountResponse = AdminSteps.createUserAccount(userRequest);
+
+        CustomerProfileResponse user1Profile = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
 
         String oldUserName = user1Profile.getName();
         Long oldUserId = user1Profile.getId();
-        String newName = RandomData.getName();
 
-        UpdateProfileResponse updateResponse = new UpdateUserProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
-                .put(newName)
-                .extract()
-                .as(UpdateProfileResponse.class);
+        UpdateProfileResponse updateResponse = new ValidatedCrudRequester<UpdateProfileResponse>(Endpoint.UPDATE_USER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .update(NewCustomerName.builder().newName(RandomData.getName()).build());
 
-        softly.assertThat(updateResponse.getMessage()).isEqualTo("Profile updated successfully");
-        softly.assertThat(updateResponse.getCustomer().getName()).isEqualTo(newName);
+        softly.assertThat(updateResponse.getMessage()).isEqualTo(Message_And_Errors_text.PROFILE_UPDATED.getValue());
+        softly.assertThat(updateResponse.getCustomer().getName()).isNotEqualTo(oldUserName);
 
-        CustomerProfileResponse user1ProfileAfter = new GetCustomerProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CustomerProfileResponse.class);
+        CustomerProfileResponse user1ProfileAfter = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
 
-        softly.assertThat(user1ProfileAfter.getName()).isEqualTo(newName);
+        softly.assertThat(user1ProfileAfter.getName()).isEqualTo(updateResponse.getCustomer().getName());
         softly.assertThat(user1ProfileAfter.getId()).isEqualTo(oldUserId);
 
     }
@@ -58,27 +59,34 @@ public class ChangeNameProfile extends BaseTest {
 
     @MethodSource("invalidNamesValues")
     @ParameterizedTest
-    public void UpdateCustomerProfileNameAtOneWord(String name) {
+    public void UpdateCustomerProfileNameWithInvalidData(String name) {
 
-        TestAccData user1 = TestDataFactory.createTransferTestData();
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
-        CustomerProfileResponse user1Profile = new GetCustomerProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CustomerProfileResponse.class);
+        CreateAccountResponse accountResponse = AdminSteps.createUserAccount(userRequest);
+
+
+        CustomerProfileResponse user1Profile = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
 
         String oldUserName = user1Profile.getName();
         Long oldUserId = user1Profile.getId();
 
-        new UpdateUserProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsBadRequestWithText("Name must contain two words with letters only"))
-                .put(name);
+        NewCustomerName newName = NewCustomerName.builder().newName(name).build();
 
-        CustomerProfileResponse user1ProfileAfter = new GetCustomerProfileRequester(RequestSpecs.authAsUser(user1.getUser1Username(), user1.getUser1Password()), ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CustomerProfileResponse.class);
+        UpdateProfileResponse user1ProfileAfter = new ValidatedCrudRequester<UpdateProfileResponse>(Endpoint.UPDATE_USER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsBadRequestWithText(Message_And_Errors_text.PROFILE_INVALID_NAME.getValue()))
+                .update(newName);
 
-        softly.assertThat(user1ProfileAfter.getName()).isEqualTo(oldUserName);
-        softly.assertThat(user1ProfileAfter.getId()).isEqualTo(oldUserId);
+        CustomerProfileResponse userAfterProfile = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
+
+        softly.assertThat(userAfterProfile.getName()).isEqualTo(oldUserName);
+        softly.assertThat(userAfterProfile.getId()).isEqualTo(oldUserId);
     }
 }

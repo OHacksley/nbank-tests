@@ -2,10 +2,12 @@ package Iteration_1;
 
 import generators.RandomData;
 import models.CreateUserRequest;
+import models.CreateUserResponse;
 import models.UserRole;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -14,27 +16,13 @@ public class CreateAccountTest extends BaseTest {
 
     @Test
     public void userCanCreateAccountTest() {
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequest user = AdminSteps.createUser();
 
-        //создание пользователя
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
-
-        new CreateAccountRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+        new CrudRequester(Endpoint.ACCOUNTS, RequestSpecs.authAsUser(user.getUsername(), user.getPassword()),
                 ResponseSpecs.entityWasCreated())
                 .post(null);
-
-        //Получаем токен юзера.
     }
 }
-
-//Создаем аккаунт(счет)
 
 
 

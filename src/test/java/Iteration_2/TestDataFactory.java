@@ -50,6 +50,5 @@ public class TestDataFactory extends TestAccData {
                 user1.getPassword(),
                 user2.getUsername(),
                 user2.getPassword()
-        );
-    }
+        );}
 }
