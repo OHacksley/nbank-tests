@@ -1,61 +1,53 @@
 package Iteration_2;
 
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
-import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeAll;
+import Iteration_1.BaseTest;
+import generators.RandomData;
+import models.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
-import java.util.List;
 import java.util.stream.Stream;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 
-public class ChangeNameProfile {
-
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(
-                List.of(new RequestLoggingFilter(),
-                        new ResponseLoggingFilter()));
-    }
+public class ChangeNameProfile extends BaseTest {
 
     @Test
     public void UpdateCustomerProfile() {
-        String name = "Artem Artemovov";
-        String authHeader = "Basic VHJhbnNmZXIyOkFydGVtMjAwMCU=";
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", authHeader)
-                .body(String.format("""
-                        {
-                        "name": "%s"
-                        }
-                        """, name))
-                .when()
-                .put("http://localhost:4111/api/v1/customer/profile")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .body("message", equalTo("Profile updated successfully"))
-                .body("customer.name", equalTo(name));
+        CreateAccountResponse accountResponse = AdminSteps.createUserAccount(userRequest);
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", authHeader)
-                .when()
-                .get("http://localhost:4111/api/v1/customer/profile")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .body("name", equalTo(name));
+        CustomerProfileResponse user1Profile = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
+
+        String oldUserName = user1Profile.getName();
+        Long oldUserId = user1Profile.getId();
+
+        UpdateProfileResponse updateResponse = new ValidatedCrudRequester<UpdateProfileResponse>(Endpoint.UPDATE_USER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .update(NewCustomerName.builder().newName(RandomData.getName()).build());
+
+        softly.assertThat(updateResponse.getMessage()).isEqualTo(Message_And_Errors_text.PROFILE_UPDATED.getValue());
+        softly.assertThat(updateResponse.getCustomer().getName()).isNotEqualTo(oldUserName);
+
+        CustomerProfileResponse user1ProfileAfter = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
+
+        softly.assertThat(user1ProfileAfter.getName()).isEqualTo(updateResponse.getCustomer().getName());
+        softly.assertThat(user1ProfileAfter.getId()).isEqualTo(oldUserId);
+
     }
 
     public static Stream<Arguments> invalidNamesValues() {
@@ -67,34 +59,34 @@ public class ChangeNameProfile {
 
     @MethodSource("invalidNamesValues")
     @ParameterizedTest
-    public void UpdateCustomerProfileNameAtOneWord(String name) {
+    public void UpdateCustomerProfileNameWithInvalidData(String name) {
 
-        String authHeader = "Basic VHJhbnNmZXIyOkFydGVtMjAwMCU=";
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", authHeader)
-                .body(String.format("""
-                        {
-                        "name": "%s"
-                        }
-                        """, name))
-                .when()
-                .put("http://localhost:4111/api/v1/customer/profile")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .body("message", equalTo("Profile updated successfully"))
-                .body("customer.name", equalTo(name));
+        CreateAccountResponse accountResponse = AdminSteps.createUserAccount(userRequest);
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", authHeader)
-                .when()
-                .get("http://localhost:4111/api/v1/customer/profile")
-                .then()
-                .statusCode(HttpStatus.SC_OK)
-                .body("name", equalTo(name));
+
+        CustomerProfileResponse user1Profile = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
+
+        String oldUserName = user1Profile.getName();
+        Long oldUserId = user1Profile.getId();
+
+        NewCustomerName newName = NewCustomerName.builder().newName(name).build();
+
+        UpdateProfileResponse user1ProfileAfter = new ValidatedCrudRequester<UpdateProfileResponse>(Endpoint.UPDATE_USER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsBadRequestWithText(Message_And_Errors_text.PROFILE_INVALID_NAME.getValue()))
+                .update(newName);
+
+        CustomerProfileResponse userAfterProfile = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .getWithoutId();
+
+        softly.assertThat(userAfterProfile.getName()).isEqualTo(oldUserName);
+        softly.assertThat(userAfterProfile.getId()).isEqualTo(oldUserId);
     }
 }
