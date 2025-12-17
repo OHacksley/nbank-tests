@@ -1,15 +1,15 @@
-package Iteration_2;
+package Iteration_2.api;
 
 import generators.RandomData;
-import models.*;
+import models.CreateAccountResponse;
+import models.CreateUserRequest;
+import models.DepositRequest;
+import models.UserRole;
 import requests.AdminCreateUserRequester;
 import requests.CreateAccountRequester;
-import requests.GetCustomerProfileRequester;
 import requests.UserCreateDepositRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
-
-import java.util.List;
 
 public class TransfersDataHelper {
     static Long USER_1_ID;

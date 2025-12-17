@@ -2,7 +2,6 @@ package models;
 
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -15,7 +14,7 @@ public class AllUsersResponse extends BaseModel {
     private String password;
     private String name;
     private String role;
-    private List<AccountInfo> accounts;
+    private List<AccountResponse> accounts;
 }
 
 

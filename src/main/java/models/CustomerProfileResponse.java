@@ -20,5 +20,5 @@ public class CustomerProfileResponse extends BaseModel{
     private String password;
     private String name;
     private String role;
-    private List<AccountInfo> accounts;
+    private List<AccountResponse> accounts;
 }

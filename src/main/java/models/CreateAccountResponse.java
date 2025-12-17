@@ -16,6 +16,6 @@ public class CreateAccountResponse extends BaseModel{
 
     private Long id;
     private String accountNumber;
-    private String balance;
+    private Double balance;
     private List<Object> transactions;
 }

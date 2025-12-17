@@ -1,34 +1,23 @@
-package Iteration_2;
+package Iteration_2.api;
 
-import Iteration_1.BaseTest;
-import generators.RandomData;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
+import Iteration_1.api.BaseTest;
 import models.*;
-import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import requests.*;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
 import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
-import static Iteration_2.TransfersDataHelper.*;
+import static Iteration_2.api.TransfersDataHelper.*;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 
 public class CreateUserTransfers extends BaseTest {
 
@@ -98,7 +87,7 @@ public class CreateUserTransfers extends BaseTest {
 
         //Проверяем баланс 2ого аккаунта
 
-        Optional<AccountInfo> targetArgument = getProfileResponse.getAccounts().stream()
+        Optional<AccountResponse> targetArgument = getProfileResponse.getAccounts().stream()
                 .filter(acc -> acc.getId().equals(account2Id))
                 .findFirst();
 
@@ -155,7 +144,7 @@ public class CreateUserTransfers extends BaseTest {
 
         //Проверяем баланс 1ого аккаунта
 
-        Optional<AccountInfo> targetArgument = getProfileResponse.getAccounts().stream()
+        Optional<AccountResponse> targetArgument = getProfileResponse.getAccounts().stream()
                 .filter(acc -> acc.getId().equals(account1Id))
                 .findFirst();
         softly.assertThat(targetArgument.isPresent()).isTrue();
@@ -205,7 +194,7 @@ public class CreateUserTransfers extends BaseTest {
 
         //Проверяем баланс 1ого аккаунта
 
-        Optional<AccountInfo> targetArgument = getProfileResponse.getAccounts().stream()
+        Optional<AccountResponse> targetArgument = getProfileResponse.getAccounts().stream()
                 .filter(acc -> acc.getId().equals(account1Id))
                 .findFirst();
         softly.assertThat(targetArgument.isPresent()).isTrue();

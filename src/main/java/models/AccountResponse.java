@@ -12,10 +12,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AccountInfo extends BaseModel{
+public class AccountResponse extends BaseModel{
 
     private Long id;
     private String accountNumber;
     private Double balance;
-    private List<Transaction> transactions;
+    private List<Object> transactions;
 }

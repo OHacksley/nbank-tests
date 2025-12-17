@@ -1,4 +1,4 @@
-package Iteration_2;
+package Iteration_2.api;
 
 import generators.RandomData;
 import models.CreateAccountResponse;

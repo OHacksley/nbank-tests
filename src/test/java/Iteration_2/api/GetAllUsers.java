@@ -1,13 +1,10 @@
-package Iteration_2;
+package Iteration_2.api;
 
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
-import models.AccountInfo;
 import models.AllUsersResponse;
-import models.CreateUserResponse;
-import models.UserInfo;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
