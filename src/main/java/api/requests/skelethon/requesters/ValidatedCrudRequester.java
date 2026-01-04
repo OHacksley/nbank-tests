@@ -1,0 +1,62 @@
+package api.requests.skelethon.requesters;
+
+import api.requests.skelethon.interfaces.GetAllEndpointInterface;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
+import api.models.BaseModel;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.HttpRequest;
+import api.requests.skelethon.interfaces.CrudEndpointInterface;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class ValidatedCrudRequester <T extends BaseModel> extends HttpRequest implements CrudEndpointInterface, GetAllEndpointInterface {
+    private CrudRequester crudRequester;
+    public ValidatedCrudRequester(Endpoint endpoint, RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
+        super(endpoint, requestSpecification, responseSpecification);
+        this.crudRequester = new CrudRequester(endpoint, requestSpecification, responseSpecification);
+    }
+
+    @Override
+    public T post(BaseModel model) {
+
+        return (T) crudRequester.post(model)
+                .extract()
+                .as(endpoint.getResponseModel());
+    }
+
+    @Override
+    public T get(Long id) {
+
+        return (T) crudRequester.get(id)
+                .extract()
+                .as(endpoint.getResponseModel());
+    }
+
+    @Override
+    public T getWithoutId() {
+        return (T) crudRequester.getWithoutId()
+                .extract()
+                .as(endpoint.getResponseModel());
+    }
+
+    @Override
+    public T update(BaseModel model) {
+
+        return (T) crudRequester.update(model)
+                .extract()
+                .as(endpoint.getResponseModel());
+    }
+
+    @Override
+    public Object delete(Long id) {
+        return null;
+    }
+
+    @Override
+    public List<T> getAll(Class<?> clazz) {
+        T[] array = (T[]) crudRequester.getAll(clazz).extract().as(clazz);
+                return Arrays.asList(array);
+    }
+}

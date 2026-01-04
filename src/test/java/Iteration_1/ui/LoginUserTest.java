@@ -1,48 +1,25 @@
 package Iteration_1.ui;
 
 import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
-import models.CreateUserRequest;
-import org.junit.jupiter.api.BeforeAll;
+import api.models.CreateUserRequest;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import requests.steps.AdminSteps;
-
-import java.util.Map;
+import api.requests.steps.AdminSteps;
+import ui.pages.AdminPanel;
+import ui.pages.LoginPage;
+import ui.pages.UserDashboard;
 
 import static com.codeborne.selenide.Selenide.$;
 
-public class LoginUserTest {
+public class LoginUserTest extends BaseUiTest {
 
-
-    @BeforeAll
-    public static void setupSelenoid() {
-        Configuration.remote = "http://localhost:4444/wd/hub";
-        Configuration.baseUrl = "http://192.168.1.103:3000";
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1920x1080";
-
-        Configuration.browserCapabilities.setCapability("selenoid:options",
-                Map.of("enableVNC", true, "enablelog", true));
-    }
     @Test
     public void adminCanLoginWithCorrectDataTest(){
 
-        CreateUserRequest admin = CreateUserRequest
-                .builder()
-                .username("admin")
-                .password("admin")
-                .build();
+        CreateUserRequest admin = CreateUserRequest.getAdmin();
 
-        Selenide.open("/login");
-
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(admin.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(admin.getPassword());
-        $(By.cssSelector("button")).click();
-
-        $(Selectors.byText("Admin Panel")).shouldBe(Condition.visible);
+        new LoginPage().open().login(admin.getUsername(), admin.getPassword())
+                        .getPage(AdminPanel.class).getAdminPanelText().shouldBe(Condition.visible);
     }
 
     @Test
@@ -52,10 +29,8 @@ public class LoginUserTest {
 
         Selenide.open("/login");
 
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(user.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(user.getPassword());
-        $(By.cssSelector("button")).click();
-
-        $(Selectors.byClassName("welcome-text")).shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboard.class).getWelcomeText()
+                .shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
     }
 }

@@ -1,14 +1,14 @@
 package Iteration_2.api;
 
-import generators.RandomData;
-import models.CreateAccountResponse;
-import models.CreateUserRequest;
-import models.TestAccData;
-import models.UserRole;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import api.generators.RandomData;
+import api.models.CreateAccountResponse;
+import api.models.CreateUserRequest;
+import api.models.TestAccData;
+import api.models.UserRole;
+import api.requests.AdminCreateUserRequester;
+import api.requests.CreateAccountRequester;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
 
 public class TestDataFactory extends TestAccData {
 
