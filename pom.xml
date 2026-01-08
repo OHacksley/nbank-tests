@@ -84,6 +84,11 @@
             <version>1.18.42</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.codeborne</groupId>
+            <artifactId>selenide</artifactId>
+            <version>7.12.3</version>
+        </dependency>
     </dependencies>
 
 </project>
