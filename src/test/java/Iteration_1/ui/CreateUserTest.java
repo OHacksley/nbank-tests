@@ -1,69 +1,53 @@
 package Iteration_1.ui;
 
-import api.requests.steps.AdminSteps;
-import com.codeborne.selenide.*;
 import api.generators.RandomModelGenerator;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.comparison.ModelAssertions;
+import api.requests.steps.AdminSteps;
+import common.annotations.AdminSession;
 import org.junit.jupiter.api.Test;
 import ui.pages.AdminPanel;
 import ui.pages.BankAlert;
 
-import static com.codeborne.selenide.Selenide.$;
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class CreateUserTest extends BaseUiTest {
 
-@Test
-public void adminCanCreateUserTest () {
-//ШАГ 1 : админ залогинился в банке
-    CreateUserRequest admin = CreateUserRequest.getAdmin();
+    @Test
+    @AdminSession
+    public void adminCanCreateUserTest() {
+        CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
 
-    authAsUser(admin);
-    //ШАГ2 : админ создает юзера в банке
+        assertTrue(new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
+                .chechAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
+                .getAllUsers().stream().anyMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));
 
-    CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
+        CreateUserResponse createdUser = AdminSteps.getAllUsers().stream()
+                .filter(user -> user.getUsername().equals(newUser.getUsername()))
+                .findFirst().get();
 
-    //ШАГ 3 : проверка текста алерта
+        ModelAssertions.assertThatModels(newUser, createdUser).match();
 
-    new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
-            .chechAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
-            .getAllUsers().findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldBe(Condition.visible);
+    }
 
-    //ШАГ 5 : проверка, что юзер создан на API
+    @Test
+    @AdminSession
+    public void adminCanNotCreateWithInvalidDataTest() {
 
-CreateUserResponse createdUser = AdminSteps.getAllUsers().stream()
-        .filter(user ->user.getUsername().equals(newUser.getUsername()))
-        .findFirst().get();
+        CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
+        newUser.setUsername("a");
 
-    ModelAssertions.assertThatModels(newUser, createdUser).match();
+        assertTrue(new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
+                .chechAlertMessageAndAccept(BankAlert.USERNAME_MUST_BE_BETWEEN_3_AND_15_CHARACTERS.getMessage())
+                .getAllUsers().stream().noneMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));
 
-}
+        long userWithSameUsernameAsNewUser = AdminSteps.getAllUsers().stream()
+                .filter(user -> user.getUsername().equals(newUser.getUsername())).count();
 
-@Test
-public void adminCanNotCreateWithInvalidDataTest() {
-    //ШАГ 1 : админ залогинился в банке
-    CreateUserRequest admin = CreateUserRequest.getAdmin();
+        assertThat(userWithSameUsernameAsNewUser).isZero();
 
-    authAsUser(admin);
-    //ШАГ2 : админ создает юзера в банке
-
-    CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
-    newUser.setUsername("a");
-
-    new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword())
-            .chechAlertMessageAndAccept(BankAlert.USERNAME_MUST_BE_BETWEEN_3_AND_15_CHARACTERS.getMessage())
-            .getAllUsers().findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldNotBe(Condition.exist);
-
-    //ШАГ 5 : проверка, что юзер не создан на API
-
-    long userWithSameUsernameAsNewUser = AdminSteps.getAllUsers().stream()
-            .filter(user ->user.getUsername().equals(newUser.getUsername())).count();
-
-    assertThat(userWithSameUsernameAsNewUser).isZero();
-
-}
+    }
 }

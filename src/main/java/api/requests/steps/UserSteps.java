@@ -1,9 +1,8 @@
 package api.requests.steps;
 
-import api.models.AccountResponse;
-import api.models.CreateAccountResponse;
-import api.models.CustomerProfileResponse;
+import api.models.*;
 import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
@@ -32,6 +31,16 @@ public class UserSteps {
                 RequestSpecs.authAsUser(username, password),
                 ResponseSpecs.requestReturnsOK())
                 .getWithoutId();
+    }
 
+    public DepositResponse makeDeposit (Long accountId) {
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(accountId)
+                .balance(DepositAmount.STANDARD.getValue())
+                .build();
+        return new ValidatedCrudRequester<DepositResponse>(Endpoint.DEPOSIT,
+                RequestSpecs.authAsUser(username,password),
+                ResponseSpecs.requestReturnsOK())
+                .post(depositRequest);
     }
 }

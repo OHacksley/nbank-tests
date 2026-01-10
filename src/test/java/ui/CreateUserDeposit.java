@@ -6,6 +6,8 @@ import api.models.CreateUserRequest;
 import api.models.DepositAmount;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.UserSession;
+import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
 import ui.pages.DepositPage;
@@ -18,19 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CreateUserDeposit extends BaseUiTest {
 
     @Test
+    @UserSession
     public void userCreateDeposit() {
-        //ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ (на уровне API)
-        //ШАГ 1 : админ логинится в банке
-        //ШАГ 2 Админ создает юзера
-        //ШАГ 3 юзер логинится в банке
-
-        CreateUserRequest user = AdminSteps.createUser();
-        authAsUser(user);
 
         new UserDashboard().open().createNewAccount();
-        UserSteps userSteps = new UserSteps(user.getUsername(), user.getPassword());
-        List<CreateAccountResponse> createdAccounts = userSteps
-                .getAllAccounts();
+
+        List<CreateAccountResponse> createdAccounts = SessionStorage.getSteps().getAllAccounts();
 
         assertThat(createdAccounts).hasSize(1);
 
@@ -42,8 +37,7 @@ public class CreateUserDeposit extends BaseUiTest {
 
         new DepositPage().chechAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY.getMessage());
 
-        List<CreateAccountResponse> createdAccountsAfterDeposit = userSteps
-                .getAllAccounts();
+        List<CreateAccountResponse> createdAccountsAfterDeposit = SessionStorage.getSteps().getAllAccounts();
         assertThat(createdAccountsAfterDeposit).hasSize(1);
         assertThat(createdAccountsAfterDeposit.getFirst().getBalance()).isEqualTo(DepositAmount.STANDARD.getValue());
 
@@ -66,18 +60,12 @@ public class CreateUserDeposit extends BaseUiTest {
             assertThat(Double.parseDouble(actualAmount)).isEqualTo(STANDARD.getValue());
     */
     @Test
+    @UserSession
     public void depositInvalidValue() {
-        //ШАГИ ПО НАСТРОЙКЕ ОКРУЖЕНИЯ (на уровне API)
-        //ШАГ 1 : админ логинится в банке
-        //ШАГ 2 Админ создает юзера
-        //ШАГ 3 юзер логинится в банке
-        CreateUserRequest user = AdminSteps.createUser();
-        authAsUser(user);
 
         new UserDashboard().open().createNewAccount();
-        UserSteps userSteps = new UserSteps(user.getUsername(), user.getPassword());
-        List<CreateAccountResponse> createdAccounts = userSteps
-                .getAllAccounts();
+
+        List<CreateAccountResponse> createdAccounts = SessionStorage.getSteps().getAllAccounts();
 
         assertThat(createdAccounts).hasSize(1);
 
@@ -89,9 +77,9 @@ public class CreateUserDeposit extends BaseUiTest {
 
         new DepositPage().chechAlertMessageAndAccept(BankAlert.INCORRECT_DEPOSIT_AMOUNT.getMessage());
 
-        List<CreateAccountResponse> createdAccountsAfterDeposit = userSteps
-                .getAllAccounts();
+        List<CreateAccountResponse> createdAccountsAfterDeposit = SessionStorage.getSteps().getAllAccounts();
         assertThat(createdAccountsAfterDeposit).hasSize(1);
+        assertThat(createdAccountsAfterDeposit.getFirst().getTransactions().isEmpty());
         assertThat(createdAccountsAfterDeposit.getFirst().getBalance()).isZero();
 
     }
