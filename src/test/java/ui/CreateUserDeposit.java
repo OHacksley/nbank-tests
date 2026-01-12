@@ -33,9 +33,8 @@ public class CreateUserDeposit extends BaseUiTest {
 
         assertThat(createdAccounts.getFirst().getBalance()).isZero();
 
-        new DepositPage().open().makeDeposit(createdAccounts.getFirst().getAccountNumber(), DepositAmount.STANDARD);
-
-        new DepositPage().chechAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY.getMessage());
+        new DepositPage().open().makeDeposit(createdAccounts.getFirst().getAccountNumber(), DepositAmount.STANDARD)
+                .chechAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY.getMessage());
 
         List<CreateAccountResponse> createdAccountsAfterDeposit = SessionStorage.getSteps().getAllAccounts();
         assertThat(createdAccountsAfterDeposit).hasSize(1);
@@ -73,9 +72,8 @@ public class CreateUserDeposit extends BaseUiTest {
 
         assertThat(createdAccounts.getFirst().getBalance()).isZero();
 
-        new DepositPage().open().makeDeposit(createdAccounts.getFirst().getAccountNumber(), DepositAmount.NEGATIVE);
-
-        new DepositPage().chechAlertMessageAndAccept(BankAlert.INCORRECT_DEPOSIT_AMOUNT.getMessage());
+        new DepositPage().open().makeDeposit(createdAccounts.getFirst().getAccountNumber(), DepositAmount.NEGATIVE)
+                .chechAlertMessageAndAccept(BankAlert.INCORRECT_DEPOSIT_AMOUNT.getMessage());
 
         List<CreateAccountResponse> createdAccountsAfterDeposit = SessionStorage.getSteps().getAllAccounts();
         assertThat(createdAccountsAfterDeposit).hasSize(1);

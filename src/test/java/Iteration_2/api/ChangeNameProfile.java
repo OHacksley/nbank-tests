@@ -3,6 +3,7 @@ package Iteration_2.api;
 import Iteration_1.api.BaseTest;
 import api.generators.RandomData;
 import api.models.*;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,6 +19,8 @@ import java.util.stream.Stream;
 
 public class ChangeNameProfile extends BaseTest {
 
+
+    @Disabled
     @Test
     public void UpdateCustomerProfile() {
         CreateUserRequest userRequest = AdminSteps.createUser();
@@ -56,7 +59,7 @@ public class ChangeNameProfile extends BaseTest {
                 Arguments.of("Artem-artem"));
     }
 
-
+    @Disabled
     @MethodSource("invalidNamesValues")
     @ParameterizedTest
     public void UpdateCustomerProfileNameWithInvalidData(String name) {

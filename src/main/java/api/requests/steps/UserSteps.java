@@ -7,7 +7,10 @@ import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 
+import java.time.Duration;
 import java.util.List;
+
+import static org.awaitility.Awaitility.await;
 
 public class UserSteps {
     private String username;
@@ -26,11 +29,22 @@ public class UserSteps {
 
     }
 
-    public CustomerProfileResponse getProfileInfo () {
-        return new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
-                RequestSpecs.authAsUser(username, password),
-                ResponseSpecs.requestReturnsOK())
-                .getWithoutId();
+    public CustomerProfileResponse getProfileInfo (String newUsername) {
+        return await()
+                .pollInterval(Duration.ofSeconds(1))
+                .atMost(Duration.ofSeconds(30))
+                .pollInSameThread()
+                .ignoreException(RuntimeException.class)
+                .until(() -> {
+                            CustomerProfileResponse response = new ValidatedCrudRequester<CustomerProfileResponse>(
+                                    Endpoint.CUSTOMER_PROFILE,
+                                    RequestSpecs.authAsUser(username, password),
+                                    ResponseSpecs.requestReturnsOK())
+                                    .getWithoutId();
+
+                            return response.getName().contentEquals(newUsername) ? response : null;
+                        },
+                        response -> response != null);
     }
 
     public DepositResponse makeDeposit (Long accountId) {

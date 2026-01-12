@@ -1,5 +1,6 @@
 package api.requests;
 
+import api.requests.skelethon.Endpoint;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
@@ -17,7 +18,7 @@ public class AdminCreateUserRequester extends Request<CreateUserRequest> {
         return given()
                 .spec(requestSpecification)
                 .body(model)
-                .post("/api/v1/admin/users")
+                .post("/admin/users")
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
