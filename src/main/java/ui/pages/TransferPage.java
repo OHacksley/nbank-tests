@@ -41,4 +41,23 @@ public class TransferPage extends BasePage<TransferPage> {
 
     }
 
+    public TransferPage sendNegativeTransfer(String accNumber, DepositAmount transferAmount) {
+        String nonExName = "non-exist account number";
+        String nonExNumb = "ACC0";
+        selectAcc.selectOptionContainingText(accNumber);
+
+        recipientName.sendKeys(nonExName);
+
+        recipientAccNumber.sendKeys(nonExNumb);
+
+        enterAmount.sendKeys(String.valueOf(transferAmount.getValue()));
+
+        confirmDetailsCheck.click();
+
+        buttonSendTransfer.click();
+
+        return this;
+
+    }
+
 }

@@ -2,71 +2,45 @@ package ui;
 
 import Iteration_1.ui.BaseUiTest;
 import api.generators.RandomData;
-import api.models.CreateAccountResponse;
-import api.models.CreateUserRequest;
-import api.requests.steps.AdminSteps;
-import api.requests.steps.UserSteps;
-import com.codeborne.selenide.Selenide;
+import common.annotations.UserSession;
+import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
 import ui.pages.ProfilePage;
 import ui.pages.UserDashboard;
 
-import static com.codeborne.selenide.Condition.text;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ChangeNameProfile extends BaseUiTest {
 
     @Test
+    @UserSession
     public void changeNameWithCorrectData() {
 
-        // Создаем 1ого пользователя (аккаунт)
-
-        CreateUserRequest user1 = AdminSteps.createUser();
-
-        // Создаем счет для первого пользователя и получаем его id
-
-        CreateAccountResponse account1Response = AdminSteps.createUserAccount(user1);
-
-        authAsUser(user1);
         String newName = RandomData.getName();
 
         new ProfilePage().open().changeName(newName);
         new ProfilePage().chechAlertMessageAndAccept(BankAlert.NAME_UPDATE_SUCCESSFULLY.getMessage());
         new UserDashboard().open().waitWelcomeText(newName);
 
-        Selenide.sleep(3000);
-        UserSteps userSteps = new UserSteps(user1.getUsername(), user1.getPassword());
-        assertThat(userSteps.getProfileInfo().getName()).isEqualTo(newName);
+        assertThat(SessionStorage.getSteps().getProfileInfo().getName()).isEqualTo(newName);
 
     }
 
     @Test
+    @UserSession
     public void changeNameWithIncorrectData() {
 
-// Создаем 1ого пользователя (аккаунт)
-
-        CreateUserRequest user1 = AdminSteps.createUser();
-
-        // Создаем счет для первого пользователя и получаем его id
-
-        CreateAccountResponse account1Response = AdminSteps.createUserAccount(user1);
-
-        authAsUser(user1);
         String newName = RandomData.getIncorrectProfileName();
 
         new ProfilePage().open().changeName(newName);
         new ProfilePage().chechAlertMessageAndAccept(BankAlert.INCORRECT_PROFILE_NAME.getMessage());
-        new UserDashboard().open()
-                .getWelcomeText().shouldNotHave(text(newName))
-                .shouldHave(text("noname"));
+        new UserDashboard().open().waitStandardWelcomeText();
 
-
-        Selenide.sleep(3000);
-        UserSteps userSteps = new UserSteps(user1.getUsername(), user1.getPassword());
-        assertThat(userSteps.getProfileInfo().getName()).isNull();
+        assertThat(SessionStorage.getSteps().getProfileInfo().getName()).isNull();
 
     }
+
 }
 
 /*
