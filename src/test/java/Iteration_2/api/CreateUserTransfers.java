@@ -2,22 +2,22 @@ package Iteration_2.api;
 
 import Iteration_1.api.BaseTest;
 import api.models.*;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.requests.steps.AdminSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
-import static Iteration_2.api.TransfersDataHelper.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static io.restassured.RestAssured.given;
+import static Iteration_2.api.TransfersDataHelper.USER_1_ID;
+import static Iteration_2.api.TransfersDataHelper.USER_2_ID;
 
 public class CreateUserTransfers extends BaseTest {
 
@@ -74,15 +74,15 @@ public class CreateUserTransfers extends BaseTest {
                 ResponseSpecs.requestReturnsOK())
                 .post(transferRequest);
 
-        softly.assertThat(transferResponse.getMessage()).isEqualTo(Message_And_Errors_text.TRANSFER_SUCCES);
+        softly.assertThat(transferResponse.getMessage()).isEqualTo(Message_And_Errors_text.TRANSFER_SUCCES.getValue());
         softly.assertThat(transferResponse.getAmount()).isEqualTo(DepositAmount.STANDARD_TRANSFER.getValue());
 
         //Логинимся под 2 пользователем, проверяем баланс
 
         CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
                 RequestSpecs.authAsUser(
-                account2.getUsername(),
-                account2.getPassword()), ResponseSpecs.requestReturnsOK())
+                        account2.getUsername(),
+                        account2.getPassword()), ResponseSpecs.requestReturnsOK())
                 .getWithoutId();
 
         //Проверяем баланс 2ого аккаунта
@@ -95,14 +95,14 @@ public class CreateUserTransfers extends BaseTest {
     }
 
     public static Stream<Arguments> transferInvalidValues() {
-        return Stream.of(Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.NEGATIVE.getValue(), Message_And_Errors_text.TRANSFER_LEAST),
-                Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.ZERO.getValue(), Message_And_Errors_text.TRANSFER_EXCEED),
-                Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.LARGE_TRANSFER.getValue(), Message_And_Errors_text.TRANSFER_EXCEED));
+        return Stream.of(Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.NEGATIVE.getValue(), Message_And_Errors_text.TRANSFER_LEAST.getValue()),
+                Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.ZERO.getValue(), Message_And_Errors_text.TRANSFER_LEAST.getValue()),
+                Arguments.of(USER_1_ID, USER_2_ID, DepositAmount.LARGE_TRANSFER.getValue(), Message_And_Errors_text.TRANSFER_EXCEED.getValue()));
     }
 
     @MethodSource("transferInvalidValues")
     @ParameterizedTest
-    public void transferWithInvalidData(Double amount, String errorValue) {
+    public void transferWithInvalidData(Long User1ID, Long User2ID, Double amount, String errorValue) {
 
         CreateUserRequest account1 = AdminSteps.createUser();
 
@@ -148,7 +148,7 @@ public class CreateUserTransfers extends BaseTest {
                 .filter(acc -> acc.getId().equals(account1Id))
                 .findFirst();
         softly.assertThat(targetArgument.isPresent()).isTrue();
-        softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD);
+        softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD.getValue());
 
     }
 
@@ -198,7 +198,7 @@ public class CreateUserTransfers extends BaseTest {
                 .filter(acc -> acc.getId().equals(account1Id))
                 .findFirst();
         softly.assertThat(targetArgument.isPresent()).isTrue();
-        softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD);
+        softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD.getValue());
 
     }
 }

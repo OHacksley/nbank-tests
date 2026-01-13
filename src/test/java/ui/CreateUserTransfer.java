@@ -42,9 +42,8 @@ public class CreateUserTransfer extends BaseUiTest {
         senderStep.makeDeposit(account1Id);
         senderStep.makeDeposit(account1Id);
 
-        new TransferPage().open().sendTransfer(acc1Numb, account2.getUsername(), acc2Numb, STANDARD_TRANSFER);
-
-        new TransferPage().chechAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY.getMessage());
+        new TransferPage().open().sendTransfer(acc1Numb, account2.getUsername(), acc2Numb, STANDARD_TRANSFER)
+                .chechAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFULLY.getMessage());
 
         CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
                 RequestSpecs.authAsUser(
@@ -82,9 +81,8 @@ public class CreateUserTransfer extends BaseUiTest {
         senderStep.makeDeposit(account1Id);
         senderStep.makeDeposit(account1Id);
 
-        new TransferPage().open().sendNegativeTransfer(acc1Numb, STANDARD_TRANSFER);
-
-        new TransferPage().chechAlertMessageAndAccept(BankAlert.NO_USER_FOUND.getMessage());
+        new TransferPage().open().sendNegativeTransfer(acc1Numb, STANDARD_TRANSFER)
+                .chechAlertMessageAndAccept(BankAlert.NO_USER_FOUND.getMessage());
 
         CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
                 RequestSpecs.authAsUser(

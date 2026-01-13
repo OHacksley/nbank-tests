@@ -128,7 +128,7 @@ public class CreateUsersDeposit extends BaseTest {
 
         new CrudRequester(Endpoint.DEPOSIT,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
-                ResponseSpecs.requestReturnsBadRequestWithText(Message_And_Errors_text.DEPOSIT_ACC_NOT_FOUND.getValue()))
+                ResponseSpecs.requestReturnsForbiddenWithText(Message_And_Errors_text.DEPOSIT_FORBIDDEN.getValue()))
                 .post(depositRequest);
 
     }

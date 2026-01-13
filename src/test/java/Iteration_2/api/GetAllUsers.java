@@ -38,13 +38,4 @@ public class GetAllUsers {
 
     }
 
-    @Test
-    public void GetAllUsersImproved() {
-
-
-        AllUsersResponse allUsers = new ValidatedCrudRequester<AllUsersResponse>(Endpoint.GET_ALL_USERS,
-                RequestSpecs.adminSpec(), ResponseSpecs.requestReturnsOK())
-                .getWithoutId();
-
-    }
 }
