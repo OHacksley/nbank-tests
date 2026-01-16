@@ -1,15 +1,15 @@
-package ui;
+package Iteration_2.ui;
 
 import Iteration_1.ui.BaseUiTest;
 import api.models.*;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
-import api.requests.steps.AdminSteps;
-import api.requests.steps.UserSteps;
+import api.requests.steps.AdminAPISteps;
+import api.requests.steps.UserAPISteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.annotations.UserSession;
-import common.storage.SessionStorage;
+import common.storage.SessionAPIStorage;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
 import ui.pages.TransferPage;
@@ -18,27 +18,27 @@ import java.util.Optional;
 
 import static api.models.DepositAmount.STANDARD_TRANSFER;
 
-public class CreateUserTransfer extends BaseUiTest {
+public class CreateUserTransferTest extends BaseUiTest {
 
     @Test
     @UserSession(value = 2)
     public void transferWIthCorrectValue() {
 
-        CreateUserRequest account1 = SessionStorage.getUser(1);
+        CreateUserRequest account1 = SessionAPIStorage.getUser(1);
 
-        CreateUserRequest account2 = SessionStorage.getUser(2);
+        CreateUserRequest account2 = SessionAPIStorage.getUser(2);
 
-        CreateAccountResponse account1Response = AdminSteps.createUserAccount(account1);
+        CreateAccountResponse account1Response = AdminAPISteps.createUserAccount(account1);
 
         Long account1Id = account1Response.getId();
         String acc1Numb = account1Response.getAccountNumber();
 
-        CreateAccountResponse account2Response = AdminSteps.createUserAccount(account2);
+        CreateAccountResponse account2Response = AdminAPISteps.createUserAccount(account2);
 
         Long account2Id = account2Response.getId();
         String acc2Numb = account2Response.getAccountNumber();
 
-        UserSteps senderStep = SessionStorage.getSteps(1);
+        UserAPISteps senderStep = SessionAPIStorage.getSteps(1);
         senderStep.makeDeposit(account1Id);
         senderStep.makeDeposit(account1Id);
 
@@ -63,21 +63,21 @@ public class CreateUserTransfer extends BaseUiTest {
     @UserSession(value = 2)
     public void transferToNonExistAcc() {
 
-        CreateUserRequest account1 = SessionStorage.getUser(1);
+        CreateUserRequest account1 = SessionAPIStorage.getUser(1);
 
-        CreateUserRequest account2 = SessionStorage.getUser(2);
+        CreateUserRequest account2 = SessionAPIStorage.getUser(2);
 
-        CreateAccountResponse account1Response = AdminSteps.createUserAccount(account1);
+        CreateAccountResponse account1Response = AdminAPISteps.createUserAccount(account1);
 
         Long account1Id = account1Response.getId();
         String acc1Numb = account1Response.getAccountNumber();
 
-        CreateAccountResponse account2Response = AdminSteps.createUserAccount(account2);
+        CreateAccountResponse account2Response = AdminAPISteps.createUserAccount(account2);
 
         Long account2Id = account2Response.getId();
         String acc2Numb = account2Response.getAccountNumber();
 
-        UserSteps senderStep = SessionStorage.getSteps(1);
+        UserAPISteps senderStep = SessionAPIStorage.getSteps(1);
         senderStep.makeDeposit(account1Id);
         senderStep.makeDeposit(account1Id);
 

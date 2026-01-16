@@ -12,7 +12,7 @@ import api.specs.ResponseSpecs;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AdminSteps {
+public class AdminAPISteps {
     private static final List<Long> createdUserId = new ArrayList<>();
 
     public static CreateUserRequest createUser() {

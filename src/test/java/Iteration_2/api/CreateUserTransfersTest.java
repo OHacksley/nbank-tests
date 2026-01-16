@@ -5,10 +5,13 @@ import api.models.*;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
-import api.requests.steps.AdminSteps;
+import api.requests.steps.AdminAPISteps;
+import api.requests.steps.DataBaseSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.extensions.ApiVersionExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -18,29 +21,32 @@ import java.util.stream.Stream;
 
 import static Iteration_2.api.TransfersDataHelper.USER_1_ID;
 import static Iteration_2.api.TransfersDataHelper.USER_2_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class CreateUserTransfers extends BaseTest {
+
+@ExtendWith(ApiVersionExtension.class)
+public class CreateUserTransfersTest extends BaseTest {
 
     @Test
     public void tranfserValidSumm() {
 
         // Создаем 1ого пользователя (аккаунт)
 
-        CreateUserRequest account1 = AdminSteps.createUser();
+        CreateUserRequest account1 = AdminAPISteps.createUser();
 
         // Создаем 2ого пользователя (аккаунт)
 
-        CreateUserRequest account2 = AdminSteps.createUser();
+        CreateUserRequest account2 = AdminAPISteps.createUser();
 
         // Создаем счет для первого пользователя и получаем его id
 
-        CreateAccountResponse account1Response = AdminSteps.createUserAccount(account1);
+        CreateAccountResponse account1Response = AdminAPISteps.createUserAccount(account1);
 
         Long account1Id = account1Response.getId();
 
         // Создаем счет для второго пользователя и получаем его id
 
-        CreateAccountResponse account2Response = AdminSteps.createUserAccount(account2);
+        CreateAccountResponse account2Response = AdminAPISteps.createUserAccount(account2);
 
         Long account2Id = account2Response.getId();
 
@@ -92,6 +98,9 @@ public class CreateUserTransfers extends BaseTest {
                 .findFirst();
 
         softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD_TRANSFER.getValue());
+
+        assertThat(DataBaseSteps.getAccountBalanceByAccountNumber(account2Response.getAccountNumber())).isEqualTo(DepositAmount.STANDARD_TRANSFER.getValue());
+
     }
 
     public static Stream<Arguments> transferInvalidValues() {
@@ -104,15 +113,15 @@ public class CreateUserTransfers extends BaseTest {
     @ParameterizedTest
     public void transferWithInvalidData(Long User1ID, Long User2ID, Double amount, String errorValue) {
 
-        CreateUserRequest account1 = AdminSteps.createUser();
+        CreateUserRequest account1 = AdminAPISteps.createUser();
 
-        CreateAccountResponse account1Response = AdminSteps.createUserAccount(account1);
+        CreateAccountResponse account1Response = AdminAPISteps.createUserAccount(account1);
 
         Long account1Id = account1Response.getId();
 
-        CreateUserRequest account2 = AdminSteps.createUser();
+        CreateUserRequest account2 = AdminAPISteps.createUser();
 
-        CreateAccountResponse account2Response = AdminSteps.createUserAccount(account2);
+        CreateAccountResponse account2Response = AdminAPISteps.createUserAccount(account2);
 
         Long account2Id = account2Response.getId();
 
@@ -150,19 +159,21 @@ public class CreateUserTransfers extends BaseTest {
         softly.assertThat(targetArgument.isPresent()).isTrue();
         softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD.getValue());
 
+        assertThat(DataBaseSteps.getAccountBalanceByAccountNumber(account2Response.getAccountNumber())).isZero();
+
     }
 
     @Test
     public void transferWithBalanceLessTransferSumm() {
-        CreateUserRequest account1 = AdminSteps.createUser();
+        CreateUserRequest account1 = AdminAPISteps.createUser();
 
-        CreateAccountResponse account1Response = AdminSteps.createUserAccount(account1);
+        CreateAccountResponse account1Response = AdminAPISteps.createUserAccount(account1);
 
         Long account1Id = account1Response.getId();
 
-        CreateUserRequest account2 = AdminSteps.createUser();
+        CreateUserRequest account2 = AdminAPISteps.createUser();
 
-        CreateAccountResponse account2Response = AdminSteps.createUserAccount(account2);
+        CreateAccountResponse account2Response = AdminAPISteps.createUserAccount(account2);
 
         Long account2Id = account2Response.getId();
 
@@ -199,6 +210,9 @@ public class CreateUserTransfers extends BaseTest {
                 .findFirst();
         softly.assertThat(targetArgument.isPresent()).isTrue();
         softly.assertThat(targetArgument.get().getBalance()).isEqualTo(DepositAmount.STANDARD.getValue());
+
+
+        assertThat(DataBaseSteps.getAccountBalanceByAccountNumber(account2Response.getAccountNumber())).isZero();
 
     }
 }

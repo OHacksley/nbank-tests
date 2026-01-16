@@ -4,7 +4,7 @@ public enum Message_And_Errors_text {
     DEPOSIT_FORBIDDEN("Unauthorized access to account"),
     DEPOSIT_ACC_NOT_FOUND("Account not found"),
     TRANSFER_SUCCES("Transfer successful"),
-    TRANSFER_LEAST("Transfer amount must be at least 0.01"),
+    TRANSFER_LEAST("Invalid transfer: insufficient funds or invalid accounts"),
     TRANSFER_EXCEED("Transfer amount cannot exceed 10000"),
     TRANSFER_INVALID("Invalid transfer: insufficient funds or invalid accounts"),
     PROFILE_UPDATED("Profile updated successfully"),

@@ -1,9 +1,9 @@
-package ui;
+package Iteration_2.ui;
 
 import Iteration_1.ui.BaseUiTest;
 import api.generators.RandomData;
 import common.annotations.UserSession;
-import common.storage.SessionStorage;
+import common.storage.SessionAPIStorage;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
@@ -12,7 +12,7 @@ import ui.pages.UserDashboard;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChangeNameProfile extends BaseUiTest {
+public class ChangeNameProfileTest extends BaseUiTest {
 
     @Disabled
     @Test
@@ -25,7 +25,7 @@ public class ChangeNameProfile extends BaseUiTest {
                 .chechAlertMessageAndAccept(BankAlert.NAME_UPDATE_SUCCESSFULLY.getMessage());
         new UserDashboard().open().waitWelcomeText(newName);
 
-        SessionStorage.getSteps().getProfileInfo(newName);
+        SessionAPIStorage.getSteps().getProfileInfo(newName);
 
     }
 
@@ -40,7 +40,7 @@ public class ChangeNameProfile extends BaseUiTest {
                 .chechAlertMessageAndAccept(BankAlert.INCORRECT_PROFILE_NAME.getMessage());
         new UserDashboard().open().waitStandardWelcomeText();
 
-        assertThat(SessionStorage.getSteps().getProfileInfo("null").getName()).isNull();
+        assertThat(SessionAPIStorage.getSteps().getProfileInfo("null").getName()).isNull();
 
     }
 

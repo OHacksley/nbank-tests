@@ -1,11 +1,8 @@
 package Iteration_1.ui;
 
 import api.models.CreateAccountResponse;
-import api.models.CreateUserRequest;
-import api.requests.steps.AdminSteps;
-import api.requests.steps.UserSteps;
 import common.annotations.UserSession;
-import common.storage.SessionStorage;
+import common.storage.SessionAPIStorage;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
 import ui.pages.UserDashboard;
@@ -22,7 +19,7 @@ public class CreateAccountTest extends BaseUiTest {
 
         new UserDashboard().open().createNewAccount();
 
-        List<CreateAccountResponse> createdAccounts = SessionStorage.getSteps().getAllAccounts();
+        List<CreateAccountResponse> createdAccounts = SessionAPIStorage.getSteps().getAllAccounts();
 
         assertThat(createdAccounts).hasSize(1);
 
