@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
-import api.requests.steps.AdminSteps;
+import api.requests.steps.AdminAPISteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 
@@ -30,7 +30,7 @@ public class LoginUserTest extends BaseTest {
     @Test
     public void userCanGenerateAuthTokenTest() {
 
-        CreateUserRequest userRequest = AdminSteps.createUser();
+        CreateUserRequest userRequest = AdminAPISteps.createUser();
 
         new CrudRequester(Endpoint.LOGIN, RequestSpecs.unauthSpec(),
                 ResponseSpecs.requestReturnsOK())

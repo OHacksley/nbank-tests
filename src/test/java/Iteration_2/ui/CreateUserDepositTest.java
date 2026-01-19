@@ -1,13 +1,10 @@
-package ui;
+package Iteration_2.ui;
 
 import Iteration_1.ui.BaseUiTest;
 import api.models.CreateAccountResponse;
-import api.models.CreateUserRequest;
 import api.models.DepositAmount;
-import api.requests.steps.AdminSteps;
-import api.requests.steps.UserSteps;
 import common.annotations.UserSession;
-import common.storage.SessionStorage;
+import common.storage.SessionAPIStorage;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
 import ui.pages.DepositPage;
@@ -17,7 +14,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CreateUserDeposit extends BaseUiTest {
+public class CreateUserDepositTest extends BaseUiTest {
 
     @Test
     @UserSession
@@ -25,7 +22,7 @@ public class CreateUserDeposit extends BaseUiTest {
 
         new UserDashboard().open().createNewAccount();
 
-        List<CreateAccountResponse> createdAccounts = SessionStorage.getSteps().getAllAccounts();
+        List<CreateAccountResponse> createdAccounts = SessionAPIStorage.getSteps().getAllAccounts();
 
         assertThat(createdAccounts).hasSize(1);
 
@@ -36,7 +33,7 @@ public class CreateUserDeposit extends BaseUiTest {
         new DepositPage().open().makeDeposit(createdAccounts.getFirst().getAccountNumber(), DepositAmount.STANDARD)
                 .chechAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFULLY.getMessage());
 
-        List<CreateAccountResponse> createdAccountsAfterDeposit = SessionStorage.getSteps().getAllAccounts();
+        List<CreateAccountResponse> createdAccountsAfterDeposit = SessionAPIStorage.getSteps().getAllAccounts();
         assertThat(createdAccountsAfterDeposit).hasSize(1);
         assertThat(createdAccountsAfterDeposit.getFirst().getBalance()).isEqualTo(DepositAmount.STANDARD.getValue());
 
@@ -64,7 +61,7 @@ public class CreateUserDeposit extends BaseUiTest {
 
         new UserDashboard().open().createNewAccount();
 
-        List<CreateAccountResponse> createdAccounts = SessionStorage.getSteps().getAllAccounts();
+        List<CreateAccountResponse> createdAccounts = SessionAPIStorage.getSteps().getAllAccounts();
 
         assertThat(createdAccounts).hasSize(1);
 
@@ -75,7 +72,7 @@ public class CreateUserDeposit extends BaseUiTest {
         new DepositPage().open().makeDeposit(createdAccounts.getFirst().getAccountNumber(), DepositAmount.NEGATIVE)
                 .chechAlertMessageAndAccept(BankAlert.INCORRECT_DEPOSIT_AMOUNT.getMessage());
 
-        List<CreateAccountResponse> createdAccountsAfterDeposit = SessionStorage.getSteps().getAllAccounts();
+        List<CreateAccountResponse> createdAccountsAfterDeposit = SessionAPIStorage.getSteps().getAllAccounts();
         assertThat(createdAccountsAfterDeposit).hasSize(1);
         assertThat(createdAccountsAfterDeposit.getFirst().getTransactions().isEmpty());
         assertThat(createdAccountsAfterDeposit.getFirst().getBalance()).isZero();

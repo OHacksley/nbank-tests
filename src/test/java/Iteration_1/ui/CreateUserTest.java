@@ -1,11 +1,10 @@
 package Iteration_1.ui;
 
 import api.generators.RandomModelGenerator;
-import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.comparison.ModelAssertions;
-import api.requests.steps.AdminSteps;
+import api.requests.steps.AdminAPISteps;
 import common.annotations.AdminSession;
 import org.junit.jupiter.api.Test;
 import ui.elements.UserBage;
@@ -30,7 +29,7 @@ public class CreateUserTest extends BaseUiTest {
         assertThat(newUserBage)
                 .as("UserBage should exist on Dashboard after user creation").isNotNull();
 
-        CreateUserResponse createdUser = AdminSteps.getAllUsers().stream()
+        CreateUserResponse createdUser = AdminAPISteps.getAllUsers().stream()
                 .filter(user -> user.getUsername().equals(newUser.getUsername()))
                 .findFirst().get();
 
@@ -49,7 +48,7 @@ public class CreateUserTest extends BaseUiTest {
                 .chechAlertMessageAndAccept(BankAlert.USERNAME_MUST_BE_BETWEEN_3_AND_15_CHARACTERS.getMessage())
                 .getAllUsers().stream().noneMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));
 
-        long userWithSameUsernameAsNewUser = AdminSteps.getAllUsers().stream()
+        long userWithSameUsernameAsNewUser = AdminAPISteps.getAllUsers().stream()
                 .filter(user -> user.getUsername().equals(newUser.getUsername())).count();
 
         assertThat(userWithSameUsernameAsNewUser).isZero();

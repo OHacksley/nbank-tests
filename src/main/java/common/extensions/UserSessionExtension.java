@@ -1,9 +1,9 @@
 package common.extensions;
 
 import api.models.CreateUserRequest;
-import api.requests.steps.AdminSteps;
+import api.requests.steps.AdminAPISteps;
 import common.annotations.UserSession;
-import common.storage.SessionStorage;
+import common.storage.SessionAPIStorage;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import ui.pages.BasePage;
@@ -19,20 +19,20 @@ public class UserSessionExtension implements BeforeEachCallback {
         if (annotation != null) {
             int userCount = annotation.value();
 
-            SessionStorage.clear();
+            SessionAPIStorage.clear();
 
             List<CreateUserRequest> users = new LinkedList<>();
 
             for (int i = 0; i < userCount; i++) {
-                CreateUserRequest user = AdminSteps.createUser();
+                CreateUserRequest user = AdminAPISteps.createUser();
                 users.add(user);
             }
 
-            SessionStorage.addUsers(users);
+            SessionAPIStorage.addUsers(users);
 
             int authAsUser = annotation.auth();
 
-            BasePage.authAsUser(SessionStorage.getUser(authAsUser));
+            BasePage.authAsUser(SessionAPIStorage.getUser(authAsUser));
         }
     }
 }

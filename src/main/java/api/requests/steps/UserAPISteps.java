@@ -2,7 +2,6 @@ package api.requests.steps;
 
 import api.models.*;
 import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
@@ -12,11 +11,11 @@ import java.util.List;
 
 import static org.awaitility.Awaitility.await;
 
-public class UserSteps {
+public class UserAPISteps {
     private String username;
     private String password;
 
-    public UserSteps(String username, String password) {
+    public UserAPISteps(String username, String password) {
         this.username = username;
         this.password = password;
     }

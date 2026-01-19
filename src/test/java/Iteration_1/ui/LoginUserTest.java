@@ -5,7 +5,7 @@ import com.codeborne.selenide.Selenide;
 import api.models.CreateUserRequest;
 import common.annotations.Browsers;
 import org.junit.jupiter.api.Test;
-import api.requests.steps.AdminSteps;
+import api.requests.steps.AdminAPISteps;
 import ui.pages.AdminPanel;
 import ui.pages.LoginPage;
 import ui.pages.UserDashboard;
@@ -27,7 +27,7 @@ public class LoginUserTest extends BaseUiTest {
     @Test
     public void userCanLoginWithCorrectDataTest() {
 
-        CreateUserRequest user = AdminSteps.createUser();
+        CreateUserRequest user = AdminAPISteps.createUser();
 
         Selenide.open("/login");
 

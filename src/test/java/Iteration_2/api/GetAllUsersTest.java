@@ -4,19 +4,14 @@ import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
-import api.models.AllUsersResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.ValidatedCrudRequester;
-import api.specs.RequestSpecs;
-import api.specs.ResponseSpecs;
 
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
 
-public class GetAllUsers {
+public class GetAllUsersTest {
 
 
     @BeforeAll

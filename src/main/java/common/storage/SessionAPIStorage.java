@@ -1,23 +1,23 @@
 package common.storage;
 
 import api.models.CreateUserRequest;
-import api.requests.steps.UserSteps;
+import api.requests.steps.UserAPISteps;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class SessionStorage {
-    private static final SessionStorage INSTANCE = new SessionStorage();
+public class SessionAPIStorage {
+    private static final ThreadLocal<SessionAPIStorage> INSTANCE = ThreadLocal.withInitial(SessionAPIStorage::new);
 
-    private final LinkedHashMap<CreateUserRequest, UserSteps> usersStepsMap = new LinkedHashMap<>();
+    private final LinkedHashMap<CreateUserRequest, UserAPISteps> usersStepsMap = new LinkedHashMap<>();
 
-    private SessionStorage() {
+    private SessionAPIStorage() {
     }
 
     public static void addUsers(List<CreateUserRequest> users) {
         for (CreateUserRequest user : users) {
-            INSTANCE.usersStepsMap.put(user, new UserSteps((user.getUsername()), user.getPassword()));
+            INSTANCE.get().usersStepsMap.put(user, new UserAPISteps((user.getUsername()), user.getPassword()));
         }
     }
 
@@ -28,22 +28,22 @@ public class SessionStorage {
     */
 
     public static CreateUserRequest getUser(int number) {
-        return new ArrayList<>(INSTANCE.usersStepsMap.keySet()).get(number-1);
+        return new ArrayList<>(INSTANCE.get().usersStepsMap.keySet()).get(number-1);
     }
 
     public static CreateUserRequest getUser() {
         return getUser(1);
     }
 
-    public static UserSteps getSteps(int number) {
-        return new ArrayList<>(INSTANCE.usersStepsMap.values()).get(number-1);
+    public static UserAPISteps getSteps(int number) {
+        return new ArrayList<>(INSTANCE.get().usersStepsMap.values()).get(number-1);
     }
 
-    public static UserSteps getSteps() {
+    public static UserAPISteps getSteps() {
         return getSteps(1);
     }
 
     public static void clear() {
-        INSTANCE.usersStepsMap.clear();
+        INSTANCE.get().usersStepsMap.clear();
     }
 }
