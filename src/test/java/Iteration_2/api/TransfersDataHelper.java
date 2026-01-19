@@ -59,8 +59,8 @@ public class TransfersDataHelper {
 
     public static void depositToAccount (Long accountId, Double amount, String username, String password) {
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accountId)
-                .balance(amount)
+                .accountId(accountId)
+                .amount(amount)
                 .build();
 
         new UserCreateDepositRequester(RequestSpecs.authAsUser(username, password), ResponseSpecs.requestReturnsOK())

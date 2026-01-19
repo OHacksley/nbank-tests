@@ -48,5 +48,12 @@ public class ResponseSpecs {
                 .expectBody(equalTo(expectedMessage))
                 .build();
     }
+    public static ResponseSpecification requestReturnsBadRequestWithContentText(String expectedText) {
+        return defaultResponseBuilder()
+                .expectStatusCode(400)
+                .expectContentType(ContentType.JSON) // или ContentType.ANY
+                .expectBody(Matchers.equalTo(expectedText))
+                .build();
+    }
 
 }

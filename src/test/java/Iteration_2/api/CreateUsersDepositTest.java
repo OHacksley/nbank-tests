@@ -1,11 +1,8 @@
 package Iteration_2.api;
 
 import Iteration_1.api.BaseTest;
-import api.dao.AccountDao;
 import api.models.*;
 import api.requests.steps.DataBaseSteps;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import common.annotations.APIVersion;
 import common.extensions.ApiVersionExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,11 +32,11 @@ public class CreateUsersDepositTest extends BaseTest {
         String accountNumber = user1response.getAccountNumber();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accountId)
-                .balance(DepositAmount.STANDARD.getValue())
+                .accountId(accountId)
+                .amount(DepositAmount.STANDARD.getValue())
                 .build();
 
-        DepositResponse depositResponse = new ValidatedCrudRequester<DepositResponse>(Endpoint.DEPOSIT, RequestSpecs.authAsUser(
+        DepositResponse depositResponse = new ValidatedCrudRequester<DepositResponse>(Endpoint.ACCOUNT_DEPOSIT, RequestSpecs.authAsUser(
                 user1.getUsername(),
                 user1.getPassword()), ResponseSpecs.requestReturnsOK())
                 .post(depositRequest);
@@ -73,11 +70,11 @@ public class CreateUsersDepositTest extends BaseTest {
         String accountNumber = accountResponse.getAccountNumber();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accountId)
-                .balance(balance)
+                .accountId(accountId)
+                .amount(balance)
                 .build();
 
-        new CrudRequester(Endpoint.DEPOSIT, RequestSpecs.authAsUser(
+        new CrudRequester(Endpoint.ACCOUNT_DEPOSIT, RequestSpecs.authAsUser(
                 userRequest.getUsername(),
                 userRequest.getPassword()), ResponseSpecs.requestReturnsBadRequestWithText(errorValue))
                 .post(depositRequest);
@@ -106,11 +103,11 @@ public class CreateUsersDepositTest extends BaseTest {
             Long account2Id = account2Response.getId();
 
             DepositRequest depositRequest = DepositRequest.builder()
-                    .id(account2Id)
-                    .balance(DepositAmount.STANDARD.getValue())
+                    .accountId(account2Id)
+                    .amount(DepositAmount.STANDARD.getValue())
                     .build();
 
-            new CrudRequester(Endpoint.DEPOSIT,
+            new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
                     RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                     ResponseSpecs.requestReturnsForbiddenWithText(Message_And_Errors_text.DEPOSIT_FORBIDDEN.getValue()))
                     .post(depositRequest);
@@ -134,11 +131,11 @@ public class CreateUsersDepositTest extends BaseTest {
         CreateAccountResponse accountResponse = AdminAPISteps.createUserAccount(account1);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(0L)
-                .balance(DepositAmount.STANDARD.getValue())
+                .accountId(0L)
+                .amount(DepositAmount.STANDARD.getValue())
                 .build();
 
-        new CrudRequester(Endpoint.DEPOSIT,
+        new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
                 ResponseSpecs.requestReturnsForbiddenWithText(Message_And_Errors_text.DEPOSIT_FORBIDDEN.getValue()))
                 .post(depositRequest);
