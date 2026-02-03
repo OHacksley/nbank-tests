@@ -52,16 +52,16 @@ public class CreateUserTransfersTest extends BaseTest {
 
         //Логинимся под 1 пользователем и выполняем депозит на 10000
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(account1Id)
-                .balance(DepositAmount.STANDARD.getValue())
+                .accountId(account1Id)
+                .amount(DepositAmount.STANDARD.getValue())
                 .build();
 
-        new CrudRequester(Endpoint.DEPOSIT,
+        new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
                 ResponseSpecs.requestReturnsOK())
                 .post(depositRequest);
 
-        new CrudRequester(Endpoint.DEPOSIT,
+        new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
                 ResponseSpecs.requestReturnsOK())
                 .post(depositRequest);
@@ -126,11 +126,11 @@ public class CreateUserTransfersTest extends BaseTest {
         Long account2Id = account2Response.getId();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(account1Id)
-                .balance(DepositAmount.STANDARD.getValue())
+                .accountId(account1Id)
+                .amount(DepositAmount.STANDARD.getValue())
                 .build();
 
-        new CrudRequester(Endpoint.DEPOSIT,
+        new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
                 ResponseSpecs.requestReturnsOK())
                 .post(depositRequest);
@@ -178,11 +178,11 @@ public class CreateUserTransfersTest extends BaseTest {
         Long account2Id = account2Response.getId();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(account1Id)
-                .balance(DepositAmount.STANDARD.getValue())
+                .accountId(account1Id)
+                .amount(DepositAmount.STANDARD.getValue())
                 .build();
 
-        new CrudRequester(Endpoint.DEPOSIT,
+        new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
                 ResponseSpecs.requestReturnsOK())
                 .post(depositRequest);
