@@ -9,7 +9,6 @@ import api.requests.steps.DataBaseSteps;
 import common.extensions.ApiVersionExtension;
 import org.junit.jupiter.api.Test;
 import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.steps.AdminAPISteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
