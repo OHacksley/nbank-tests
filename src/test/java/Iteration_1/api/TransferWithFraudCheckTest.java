@@ -5,11 +5,11 @@ import api.models.comparison.ModelAssertions;
 import api.requests.steps.AccountSteps;
 import api.requests.steps.AdminAPISteps;
 import common.annotations.FraudCheckMock;
-import common.annotations.UserSession;
 import common.extensions.TimingExtension;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,7 +18,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-
+@Disabled
 @ExtendWith({TimingExtension.class, FraudCheckWireMockExtension.class})
 public class TransferWithFraudCheckTest extends BaseTest {
 

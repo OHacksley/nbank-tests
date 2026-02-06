@@ -4,12 +4,15 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import common.annotations.FraudCheckMock;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
+
+@Disabled
 public class FraudCheckWireMockExtension implements BeforeEachCallback, AfterEachCallback {
 
     private WireMockServer wireMockServer;

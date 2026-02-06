@@ -25,7 +25,7 @@ public class TimingExtension implements BeforeTestExecutionCallback, AfterTestEx
         String testName = extensionContext.getRequiredTestClass().getPackageName() + "." + extensionContext.getDisplayName();
         Long startTime = startTimes.get(testName);
 
-        // ВАЖНО: проверка на null!
+        //проверка на null
         if (startTime == null) {
             System.err.println("Warning: No start time found for test: " + testName);
             return;

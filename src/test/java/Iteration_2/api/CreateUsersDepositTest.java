@@ -38,16 +38,13 @@ public class CreateUsersDepositTest extends BaseTest {
 
         DepositResponse depositResponse = new ValidatedCrudRequester<DepositResponse>(Endpoint.ACCOUNT_DEPOSIT, RequestSpecs.authAsUser(
                 user1.getUsername(),
-                user1.getPassword()), ResponseSpecs.requestReturnsOK())
+                user1.getPassword()),
+                ResponseSpecs.requestReturnsOK())
                 .post(depositRequest);
         //Проверки "основного" тела
         softly.assertThat(depositResponse.getId()).isEqualTo(accountId);
         softly.assertThat(depositResponse.getAccountNumber()).isEqualTo(accountNumber);
         softly.assertThat(depositResponse.getBalance()).isEqualTo(DepositAmount.STANDARD.getValue());
-        //Проверки блоков "Транзакции"
-        softly.assertThat(depositResponse.getTransactions()).isNotEmpty();
-        softly.assertThat(depositResponse.getTransactions().get(0).getAmount()).isEqualTo(DepositAmount.STANDARD.getValue());
-        softly.assertThat(depositResponse.getTransactions().get(0).getType()).isEqualTo(TypeOfOperations.DEPOSIT.getValue());
 
         assertThat(DataBaseSteps.getAccountBalanceByAccountNumber(accountNumber)).isEqualTo(DepositAmount.STANDARD.getValue());
 

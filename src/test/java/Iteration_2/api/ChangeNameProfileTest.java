@@ -1,7 +1,6 @@
 package Iteration_2.api;
 
 import Iteration_1.api.BaseTest;
-import api.dao.AccountDao;
 import api.generators.RandomData;
 import api.models.*;
 import api.requests.steps.DataBaseSteps;

@@ -11,10 +11,8 @@ import ui.elements.BaseElement;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static com.codeborne.selenide.Selenide.*;
-import static com.codeborne.selenide.WebDriverRunner.url;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class BasePage<T extends BasePage<T>> {
