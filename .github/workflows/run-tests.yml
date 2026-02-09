@@ -34,4 +34,4 @@ jobs:
         run: ./mvnw clean test -P api,ui
         env:
           APIBASEURL: http://localhost:4111
-          UIBASEURL: http://frontend:4111
+          UIBASEURL: http://frontend:3000
