@@ -3,7 +3,7 @@ docker compose -f ./docker-compose.yml down
 
 echo ">>> Docker pull все образы браузеров"
 
-# Путь до файла
+# Путь до  файла
 json_file="./config/browsers.json"
 
 # Проверяем, что jq установлен
