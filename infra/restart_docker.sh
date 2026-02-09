@@ -24,4 +24,4 @@ done
 echo ""
 echo ">>> Запуск Docker Compose окружения"
 docker compose -f docker-compose.yml up -d
-echo "Ожидание запуска сервисов (30 секунд)..."
+echo "Ожидание запуска сервисов (30 секунд)...."
