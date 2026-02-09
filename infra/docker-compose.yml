@@ -37,7 +37,7 @@ services:
       - nbank-network
 
   frontend:
-    image: nobugsme/nbank-ui:with-nginx
+    image: nobugsme/nbank-ui:with_nginx
     ports:
       - "3000:80"
     depends_on:
