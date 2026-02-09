@@ -1,6 +1,6 @@
 name: Run tests
 
-on: [push, workflow_dispatch]
+on: [ push, workflow_dispatch ]
 
 jobs:
   run-tests:
@@ -35,5 +35,18 @@ jobs:
         env:
           APIBASEURL: http://localhost:4111
           UIBASEURL: http://frontend
-#          UIREMOTE: http://selenoid:4444/wd/hub
-#          comment
+          UIREMOTE: http://selenoid:4444/wd/hub
+      #          comment
+      - name: Debug Selenoid
+        run: |
+          echo "=== Selenoid status ==="
+          curl -v http://localhost:4444/status || echo "Selenoid not responding"
+      
+          echo "=== Selenoid logs ==="
+          docker logs infra-selenoid-1 2>&1 | tail -100
+      
+          echo "=== Check browsers.json ==="
+          docker exec infra-selenoid-1 cat /etc/selenoid/browsers.json 2>/dev/null || echo "No browsers.json"
+      
+          echo "=== Try from Selenoid container ==="
+          docker exec infra-selenoid-1 curl -v http://frontend:80 || echo "Cannot reach frontend from selenoid"
