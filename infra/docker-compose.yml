@@ -37,9 +37,9 @@ services:
       - nbank-network
 
   frontend:
-    image: nobugsme/nbank-ui:latest
+    image: nobugsme/nbank-ui:with-nginx
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - backend
     networks:
@@ -61,7 +61,7 @@ services:
   selenoid-ui:
     image: aerokube/selenoid-ui:latest
     ports:
-      - "6567:8080"
+      - "8080:8080"
     command: ["--selenoid-uri", "http://selenoid:4444"]
     depends_on:
       - selenoid

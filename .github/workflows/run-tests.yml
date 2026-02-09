@@ -35,5 +35,5 @@ jobs:
         env:
           APIBASEURL: http://localhost:4111
           UIBASEURL: http://frontend
-          UIREMOTE: http://selenoid:4444/wd/hub
+#          UIREMOTE: http://selenoid:4444/wd/hub
 #          comment
