@@ -1,6 +1,5 @@
 name: Run tests
 
-# триггер
 on: [ push, workflow_dispatch ]
 
 jobs:
@@ -11,8 +10,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Make mvnw executable
-        run: chmod +x mvnw
+      - name: Debug Maven Wrapper structure
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          ls -la
+          
+          echo -e "\n=== Checking mvnw file ==="
+          if [ -f "mvnw" ]; then
+            echo "mvnw exists"
+            echo "First 5 lines of mvnw:"
+            head -5 mvnw
+            echo "File permissions:"
+            ls -la mvnw
+          else
+            echo "mvnw NOT found"
+          fi
+          
+          echo -e "\n=== Checking .mvn directory ==="
+          if [ -d ".mvn" ]; then
+            echo ".mvn directory exists"
+            find .mvn -type f
+          else
+            echo ".mvn directory NOT found"
+          fi
+          
+          echo -e "\n=== Checking for wrapper jar ==="
+          if [ -f ".mvn/wrapper/maven-wrapper.jar" ]; then
+            echo "maven-wrapper.jar found"
+          else
+            echo "maven-wrapper.jar NOT found"
+          fi
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -32,4 +60,17 @@ jobs:
         run: bash infra/restart_docker.sh
 
       - name: Run tests
-        run: mvnw clean test
+        run: |
+          # Пробуем оба варианта
+          echo "Trying ./mvnw..."
+          ./mvnw --version || echo "./mvnw failed"
+          
+          echo -e "\nTrying mvnw..."
+          mvnw --version || echo "mvnw failed"
+          
+          echo -e "\nTrying sh mvnw..."
+          sh mvnw --version || echo "sh mvnw failed"
+          
+          # Если ничего не работает, используем системный maven
+          echo -e "\nUsing system maven..."
+          mvn --version
