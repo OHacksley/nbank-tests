@@ -52,7 +52,7 @@ public class CreateUserTransfersTest extends BaseTest {
 
         //Логинимся под 1 пользователем и выполняем депозит на 10000
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(account1Id)
+                .Id(account1Id)
                 .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
@@ -126,7 +126,7 @@ public class CreateUserTransfersTest extends BaseTest {
         Long account2Id = account2Response.getId();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(account1Id)
+                .Id(account1Id)
                 .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
@@ -178,7 +178,7 @@ public class CreateUserTransfersTest extends BaseTest {
         Long account2Id = account2Response.getId();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(account1Id)
+                .Id(account1Id)
                 .balance(DepositAmount.STANDARD.getValue())
                 .build();
 

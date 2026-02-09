@@ -32,7 +32,7 @@ public class CreateUsersDepositTest extends BaseTest {
         String accountNumber = user1response.getAccountNumber();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(accountId)
+                .Id(accountId)
                 .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
@@ -67,7 +67,7 @@ public class CreateUsersDepositTest extends BaseTest {
         String accountNumber = accountResponse.getAccountNumber();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(accountId)
+                .Id(accountId)
                 .balance(balance)
                 .build();
 
@@ -100,7 +100,7 @@ public class CreateUsersDepositTest extends BaseTest {
             Long account2Id = account2Response.getId();
 
             DepositRequest depositRequest = DepositRequest.builder()
-                    .accountId(account2Id)
+                    .Id(account2Id)
                     .balance(DepositAmount.STANDARD.getValue())
                     .build();
 
@@ -128,7 +128,7 @@ public class CreateUsersDepositTest extends BaseTest {
         CreateAccountResponse accountResponse = AdminAPISteps.createUserAccount(account1);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(0L)
+                .Id(0L)
                 .balance(DepositAmount.STANDARD.getValue())
                 .build();
 

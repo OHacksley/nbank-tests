@@ -33,7 +33,7 @@ public class AccountSteps {
     public DepositResponse depositToAccount(Long accountId, Double amount) {
         return StepLogger.log("User " + username + " deposits " + amount + " to account " + accountId, () -> {
             DepositRequest depositRequest = DepositRequest.builder()
-                    .accountId(accountId)
+                    .Id(accountId)
                     .balance(amount)
                     .build();
 
