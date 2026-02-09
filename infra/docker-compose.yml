@@ -38,7 +38,7 @@ services:
 
   frontend:
     image: nobugsme/nbank-ui:latest
-    expose: # не открываем порт наружу, а даем доступ контейнерам в сети
+    ports:
       - "3000:80"
     depends_on:
       - backend
