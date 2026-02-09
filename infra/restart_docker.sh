@@ -1,5 +1,5 @@
 echo ">>> Остановить Docker Compose"
-docker compose -f ./docker-compose-default.yml down
+docker compose -f ./docker-compose.yml down
 
 echo ">>> Docker pull все образы браузеров"
 
@@ -23,5 +23,5 @@ done
 
 echo ""
 echo ">>> Запуск Docker Compose окружения"
-docker compose -f ./docker-compose-default.yml up -d
+docker compose -f ./docker-compose.yml up -d
 echo "Ожидание запуска сервисов (30 секунд)..."
