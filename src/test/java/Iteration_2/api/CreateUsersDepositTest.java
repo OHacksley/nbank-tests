@@ -33,7 +33,7 @@ public class CreateUsersDepositTest extends BaseTest {
 
         DepositRequest depositRequest = DepositRequest.builder()
                 .accountId(accountId)
-                .amount(DepositAmount.STANDARD.getValue())
+                .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
         DepositResponse depositResponse = new ValidatedCrudRequester<DepositResponse>(Endpoint.ACCOUNT_DEPOSIT, RequestSpecs.authAsUser(
@@ -68,7 +68,7 @@ public class CreateUsersDepositTest extends BaseTest {
 
         DepositRequest depositRequest = DepositRequest.builder()
                 .accountId(accountId)
-                .amount(balance)
+                .balance(balance)
                 .build();
 
         new CrudRequester(Endpoint.ACCOUNT_DEPOSIT, RequestSpecs.authAsUser(
@@ -101,7 +101,7 @@ public class CreateUsersDepositTest extends BaseTest {
 
             DepositRequest depositRequest = DepositRequest.builder()
                     .accountId(account2Id)
-                    .amount(DepositAmount.STANDARD.getValue())
+                    .balance(DepositAmount.STANDARD.getValue())
                     .build();
 
             new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
@@ -129,7 +129,7 @@ public class CreateUsersDepositTest extends BaseTest {
 
         DepositRequest depositRequest = DepositRequest.builder()
                 .accountId(0L)
-                .amount(DepositAmount.STANDARD.getValue())
+                .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
         new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
