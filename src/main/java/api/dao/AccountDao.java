@@ -14,5 +14,5 @@ public class AccountDao extends BaseDaoModel{
     private String accountNumber;
     private Double balance;
     private Long customerId;
-    //Коммент для проверки ci/cd 2
+    //Коммент для проверки ci/cd 4
 }
