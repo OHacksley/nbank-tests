@@ -1,6 +1,9 @@
 name: Build and push
 
-on: 'src/**'
+on:
+  push:
+    paths:
+      - 'src/**'
 
 jobs:
   run-tests:
