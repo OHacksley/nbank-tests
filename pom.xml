@@ -212,7 +212,9 @@
             <version>3.3.1</version>
             <configuration>
                 <configLocation>google_checks.xml</configLocation>
-                <failOnViolation>true</failOnViolation>
+                <consoleOutput>true</consoleOutput>
+                <failsOnError>true</failsOnError>
+                <logViolationsToConsole>true</logViolationsToConsole>
             </configuration>
             <executions>
                 <execution>

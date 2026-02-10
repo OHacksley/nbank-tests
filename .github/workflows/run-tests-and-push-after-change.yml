@@ -25,13 +25,11 @@ jobs:
       - name: Run Checkstyle
         run: ./mvnw checkstyle:check
 
-      - name: Build Docker
+      - name: Build Docker and push
         run: |
           SHA=$(git rev-parse --short HEAD)
+          echo "Building with tag: $SHA"
           docker build -t nbank-tests:$SHA .
-
-      - name: Push to Docker Hub
-        run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
           docker tag nbank-tests:$SHA ${{ secrets.DOCKERHUB_USERNAME }}/nbank-tests:$SHA
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/nbank-tests:$SHA
