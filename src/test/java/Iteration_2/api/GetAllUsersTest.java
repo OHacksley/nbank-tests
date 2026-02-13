@@ -21,7 +21,7 @@ public class GetAllUsersTest {
                 List.of(new RequestLoggingFilter(),
                         new ResponseLoggingFilter()));
     }
-    @Disabled
+
     @Test
     public void getAllUsersAsList() {
         //создание пользователя

@@ -8,6 +8,7 @@ import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.helpers.StepLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,36 +20,46 @@ public class AdminAPISteps {
         CreateUserRequest userRequest =
                 RandomModelGenerator.generate(CreateUserRequest.class);
 
-        CreateUserResponse user = new ValidatedCrudRequester<CreateUserResponse>(
-                Endpoint.ADMIN_USER,
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        return StepLogger.log("Admin create user " + userRequest.getUsername(), () -> {
 
-        createdUserId.add(user.getId());
+            CreateUserResponse user = new ValidatedCrudRequester<CreateUserResponse>(
+                    Endpoint.ADMIN_USER,
+                    RequestSpecs.adminSpec(),
+                    ResponseSpecs.entityWasCreated())
+                    .post(userRequest);
 
-        return userRequest;
+            createdUserId.add(user.getId());
+
+            return userRequest;
+        });
     }
 
     //Метод для создания счета пользователя
 
     public static CreateAccountResponse createUserAccount(CreateUserRequest userRequest) {
 
-        CreateAccountResponse accountResponse = new ValidatedCrudRequester<CreateAccountResponse>(
-                Endpoint.ACCOUNTS,
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        return StepLogger.log("User" + userRequest.getUsername() + "create account ", () -> {
 
-        return  accountResponse;
+            CreateAccountResponse accountResponse = new ValidatedCrudRequester<CreateAccountResponse>(
+                    Endpoint.ACCOUNTS,
+                    RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                    ResponseSpecs.entityWasCreated())
+                    .post(userRequest);
+
+            return accountResponse;
+        });
     }
 
     public static List<CreateUserResponse> getAllUsers() {
-        return new ValidatedCrudRequester<CreateUserResponse>(
-                Endpoint.ADMIN_USER,
-                RequestSpecs.adminSpec(),
-                        ResponseSpecs.requestReturnsOK()).getAll(CreateUserResponse[].class);
 
+        return StepLogger.log("Admin gets all users", () -> {
+
+            return new ValidatedCrudRequester<CreateUserResponse>(
+                    Endpoint.ADMIN_USER,
+                    RequestSpecs.adminSpec(),
+                    ResponseSpecs.requestReturnsOK()).getAll(CreateUserResponse[].class);
+
+        });
     }
 }
 
