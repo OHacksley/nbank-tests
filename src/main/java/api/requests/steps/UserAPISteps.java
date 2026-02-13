@@ -48,8 +48,8 @@ public class UserAPISteps {
 
     public DepositResponse makeDeposit (Long accountId) {
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(accountId)
-                .amount(DepositAmount.STANDARD.getValue())
+                .Id(accountId)
+                .balance(DepositAmount.STANDARD.getValue())
                 .build();
         return new ValidatedCrudRequester<DepositResponse>(Endpoint.ACCOUNT_DEPOSIT,
                 RequestSpecs.authAsUser(username,password),

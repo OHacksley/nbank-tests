@@ -2,14 +2,12 @@ package api.requests.steps;
 
 import api.models.*;
 import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import common.helpers.StepLogger;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import io.restassured.response.ValidatableResponse;
 import org.assertj.core.api.Assertions;
 
 import static io.restassured.RestAssured.given;
@@ -35,8 +33,8 @@ public class AccountSteps {
     public DepositResponse depositToAccount(Long accountId, Double amount) {
         return StepLogger.log("User " + username + " deposits " + amount + " to account " + accountId, () -> {
             DepositRequest depositRequest = DepositRequest.builder()
-                    .accountId(accountId)
-                    .amount(amount)
+                    .Id(accountId)
+                    .balance(amount)
                     .build();
 
             return new ValidatedCrudRequester<DepositResponse>(

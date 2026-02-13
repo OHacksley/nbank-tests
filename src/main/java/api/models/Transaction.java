@@ -17,5 +17,7 @@ public class Transaction extends BaseModel{
     private String type;
     private String timestamp;
     private Long relatedAccountId;
+    private Double amountAsDouble;
+    private String timestampAsString;
 
 }

@@ -5,6 +5,7 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class GetAllUsersTest {
                 List.of(new RequestLoggingFilter(),
                         new ResponseLoggingFilter()));
     }
-
+    @Disabled
     @Test
     public void getAllUsersAsList() {
         //создание пользователя

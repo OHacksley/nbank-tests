@@ -32,8 +32,8 @@ public class CreateUsersDepositTest extends BaseTest {
         String accountNumber = user1response.getAccountNumber();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(accountId)
-                .amount(DepositAmount.STANDARD.getValue())
+                .Id(accountId)
+                .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
         DepositResponse depositResponse = new ValidatedCrudRequester<DepositResponse>(Endpoint.ACCOUNT_DEPOSIT, RequestSpecs.authAsUser(
@@ -67,8 +67,8 @@ public class CreateUsersDepositTest extends BaseTest {
         String accountNumber = accountResponse.getAccountNumber();
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(accountId)
-                .amount(balance)
+                .Id(accountId)
+                .balance(balance)
                 .build();
 
         new CrudRequester(Endpoint.ACCOUNT_DEPOSIT, RequestSpecs.authAsUser(
@@ -100,8 +100,8 @@ public class CreateUsersDepositTest extends BaseTest {
             Long account2Id = account2Response.getId();
 
             DepositRequest depositRequest = DepositRequest.builder()
-                    .accountId(account2Id)
-                    .amount(DepositAmount.STANDARD.getValue())
+                    .Id(account2Id)
+                    .balance(DepositAmount.STANDARD.getValue())
                     .build();
 
             new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
@@ -128,8 +128,8 @@ public class CreateUsersDepositTest extends BaseTest {
         CreateAccountResponse accountResponse = AdminAPISteps.createUserAccount(account1);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .accountId(0L)
-                .amount(DepositAmount.STANDARD.getValue())
+                .Id(0L)
+                .balance(DepositAmount.STANDARD.getValue())
                 .build();
 
         new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,

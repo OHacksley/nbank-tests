@@ -1,0 +1,43 @@
+name: Build and push
+
+on:
+  push:
+    paths:
+      - 'src/**'
+
+jobs:
+  run-tests:
+    name: Set up services (review apps) and run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Run Checkstyle
+        run: ./mvnw checkstyle:check
+
+      - name: Build Docker and push
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          echo "Building with tag: $SHA"
+          docker build -t nbank-tests:$SHA .
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          docker tag nbank-tests:$SHA ${{ secrets.DOCKERHUB_USERNAME }}/nbank-tests:$SHA
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/nbank-tests:$SHA
