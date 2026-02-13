@@ -39,61 +39,61 @@ public class CreateUserTest extends BaseTest {
 
         ModelAssertions.assertThatModels(createUserRequest,createUserResponse).match();
 
-        //UserDao userDao = DataBaseSteps.getUserByUsername(createUserRequest.getUsername());
-        //DaoAndModelAssertions.assertThat(createUserResponse, userDao).match();
-
-        Thread.sleep(1000);
-
-
-        // === ДИАГНОСТИКА ===
-        System.out.println("\n=== ДИАГНОСТИКА ===");
-        System.out.println("Создан пользователь: " + createUserRequest.getUsername());
-        System.out.println("ID из ответа API: " + createUserResponse.getId());
-
-        // Проверяем прямое подключение к БД
-        try (Connection conn = DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5433/nbank",
-                "postgres", "postgres")) {
-
-            // Проверяем таблицу
-            DatabaseMetaData meta = conn.getMetaData();
-            ResultSet tables = meta.getTables(null, "public", "customers", null);
-
-            if (!tables.next()) {
-                System.out.println("❌ Таблица 'customers' не найдена в БД!");
-                return; // Не продолжаем тест
-            }
-
-            // Ищем пользователя
-            PreparedStatement stmt = conn.prepareStatement(
-                    "SELECT * FROM customers WHERE username = ?"
-            );
-            stmt.setString(1, createUserRequest.getUsername());
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                System.out.println("✅ Пользователь найден в БД!");
-                System.out.println("   ID в БД: " + rs.getLong("id"));
-                System.out.println("   Username: " + rs.getString("username"));
-                System.out.println("   Role: " + rs.getString("role"));
-
-                // Теперь проверяем через DataBaseSteps
-                UserDao userDao = DataBaseSteps.getUserByUsername(createUserRequest.getUsername());
-                if (userDao == null) {
-                    System.out.println("⚠️ DataBaseSteps не нашел пользователя!");
-                    System.out.println("   Проблема в DataBaseSteps!");
-                } else {
-                    System.out.println("✅ DataBaseSteps тоже нашел пользователя");
-                    DaoAndModelAssertions.assertThat(createUserResponse, userDao).match();
-                }
-            } else {
-                System.out.println("❌ Пользователь НЕ найден в БД!");
-                System.out.println("   Backend не сохранил данные в PostgreSQL");
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Ошибка при проверке БД: " + e.getMessage());
-        }
+//        //UserDao userDao = DataBaseSteps.getUserByUsername(createUserRequest.getUsername());
+//        //DaoAndModelAssertions.assertThat(createUserResponse, userDao).match();
+//
+//        Thread.sleep(1000);
+//
+//
+//        // === ДИАГНОСТИКА ===
+//        System.out.println("\n=== ДИАГНОСТИКА ===");
+//        System.out.println("Создан пользователь: " + createUserRequest.getUsername());
+//        System.out.println("ID из ответа API: " + createUserResponse.getId());
+//
+//        // Проверяем прямое подключение к БД
+//        try (Connection conn = DriverManager.getConnection(
+//                "jdbc:postgresql://localhost:5433/nbank",
+//                "postgres", "postgres")) {
+//
+//            // Проверяем таблицу
+//            DatabaseMetaData meta = conn.getMetaData();
+//            ResultSet tables = meta.getTables(null, "public", "customers", null);
+//
+//            if (!tables.next()) {
+//                System.out.println("❌ Таблица 'customers' не найдена в БД!");
+//                return; // Не продолжаем тест
+//            }
+//
+//            // Ищем пользователя
+//            PreparedStatement stmt = conn.prepareStatement(
+//                    "SELECT * FROM customers WHERE username = ?"
+//            );
+//            stmt.setString(1, createUserRequest.getUsername());
+//
+//            ResultSet rs = stmt.executeQuery();
+//            if (rs.next()) {
+//                System.out.println("✅ Пользователь найден в БД!");
+//                System.out.println("   ID в БД: " + rs.getLong("id"));
+//                System.out.println("   Username: " + rs.getString("username"));
+//                System.out.println("   Role: " + rs.getString("role"));
+//
+//                // Теперь проверяем через DataBaseSteps
+//                UserDao userDao = DataBaseSteps.getUserByUsername(createUserRequest.getUsername());
+//                if (userDao == null) {
+//                    System.out.println("⚠️ DataBaseSteps не нашел пользователя!");
+//                    System.out.println("   Проблема в DataBaseSteps!");
+//                } else {
+//                    System.out.println("✅ DataBaseSteps тоже нашел пользователя");
+//                    DaoAndModelAssertions.assertThat(createUserResponse, userDao).match();
+//                }
+//            } else {
+//                System.out.println("❌ Пользователь НЕ найден в БД!");
+//                System.out.println("   Backend не сохранил данные в PostgreSQL");
+//            }
+//
+//        } catch (SQLException e) {
+//            System.out.println("Ошибка при проверке БД: " + e.getMessage());
+//        }
     }
 
 

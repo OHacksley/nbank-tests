@@ -5,6 +5,7 @@ import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
+import common.helpers.StepLogger;
 
 import java.time.Duration;
 import java.util.List;
@@ -21,11 +22,14 @@ public class UserAPISteps {
     }
 
     public List<CreateAccountResponse> getAllAccounts() {
-        return new ValidatedCrudRequester<CreateAccountResponse>(
-                Endpoint.CUSTOMER_ACCOUNTS,
-                RequestSpecs.authAsUser(username, password),
-                ResponseSpecs.requestReturnsOK()).getAll(CreateAccountResponse[].class);
 
+        return StepLogger.log("User" + username + "gets their accounts ", () -> {
+
+            return new ValidatedCrudRequester<CreateAccountResponse>(
+                    Endpoint.CUSTOMER_ACCOUNTS,
+                    RequestSpecs.authAsUser(username, password),
+                    ResponseSpecs.requestReturnsOK()).getAll(CreateAccountResponse[].class);
+        });
     }
 
     public CustomerProfileResponse getProfileInfo (String newUsername) {
@@ -35,6 +39,7 @@ public class UserAPISteps {
                 .pollInSameThread()
                 .ignoreException(RuntimeException.class)
                 .until(() -> {
+
                             CustomerProfileResponse response = new ValidatedCrudRequester<CustomerProfileResponse>(
                                     Endpoint.CUSTOMER_PROFILE,
                                     RequestSpecs.authAsUser(username, password),
@@ -51,9 +56,13 @@ public class UserAPISteps {
                 .Id(accountId)
                 .balance(DepositAmount.STANDARD.getValue())
                 .build();
-        return new ValidatedCrudRequester<DepositResponse>(Endpoint.ACCOUNT_DEPOSIT,
-                RequestSpecs.authAsUser(username,password),
-                ResponseSpecs.requestReturnsOK())
-                .post(depositRequest);
+
+        return StepLogger.log("User makes deposit ", () -> {
+
+            return new ValidatedCrudRequester<DepositResponse>(Endpoint.ACCOUNT_DEPOSIT,
+                    RequestSpecs.authAsUser(username, password),
+                    ResponseSpecs.requestReturnsOK())
+                    .post(depositRequest);
+        });
     }
 }

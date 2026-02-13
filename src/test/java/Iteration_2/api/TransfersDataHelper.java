@@ -8,6 +8,7 @@ import api.models.UserRole;
 import api.requests.AdminCreateUserRequester;
 import api.requests.CreateAccountRequester;
 import api.requests.UserCreateDepositRequester;
+import api.requests.steps.AdminAPISteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 
@@ -32,21 +33,39 @@ public class TransfersDataHelper {
                 .role(UserRole.USER.toString())
                 .build();
 
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
-                .post(user1);
+//        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+//                .post(user1);
+//
+//        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+//                .post(user2);
+//
+//        CreateAccountResponse account1Response = new CreateAccountRequester(RequestSpecs.authAsUser(user1.getUsername(), user1.getPassword()), ResponseSpecs.entityWasCreated())
+//                .post(null)
+//                .extract()
+//                .as(CreateAccountResponse.class);
+//
+//        CreateAccountResponse account2Response = new CreateAccountRequester(RequestSpecs.authAsUser(user2.getUsername(), user2.getPassword()), ResponseSpecs.entityWasCreated())
+//                .post(null)
+//                .extract()
+//                .as(CreateAccountResponse.class);
 
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
-                .post(user2);
+        CreateUserRequest account1 = AdminAPISteps.createUser();
 
-        CreateAccountResponse account1Response = new CreateAccountRequester(RequestSpecs.authAsUser(user1.getUsername(), user1.getPassword()), ResponseSpecs.entityWasCreated())
-                .post(null)
-                .extract()
-                .as(CreateAccountResponse.class);
+        // Создаем 2ого пользователя (аккаунт)
 
-        CreateAccountResponse account2Response = new CreateAccountRequester(RequestSpecs.authAsUser(user2.getUsername(), user2.getPassword()), ResponseSpecs.entityWasCreated())
-                .post(null)
-                .extract()
-                .as(CreateAccountResponse.class);
+        CreateUserRequest account2 = AdminAPISteps.createUser();
+
+        // Создаем счет для первого пользователя и получаем его id
+
+        CreateAccountResponse account1Response = AdminAPISteps.createUserAccount(account1);
+
+        Long account1Id = account1Response.getId();
+
+        // Создаем счет для второго пользователя и получаем его id
+
+        CreateAccountResponse account2Response = AdminAPISteps.createUserAccount(account2);
+
+        Long account2Id = account2Response.getId();
 
         USER_1_ID = account1Response.getId();
         USER_2_ID = account2Response.getId();

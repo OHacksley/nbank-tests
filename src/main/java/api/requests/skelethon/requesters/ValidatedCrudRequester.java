@@ -1,5 +1,6 @@
 package api.requests.skelethon.requesters;
 
+import api.configs.Config;
 import api.requests.skelethon.interfaces.GetAllEndpointInterface;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
