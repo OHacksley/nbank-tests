@@ -31,7 +31,7 @@ jobs:
         run: cd infra && bash restart_docker.sh
 
       - name: Run tests
-        run: ./mvnw clean test -P api,ui
+        run: ./mvnw clean test -q
         env:
           APIBASEURL: http://localhost:4111
           UIBASEURL: http://frontend
@@ -40,7 +40,12 @@ jobs:
 
       - name: Run Swagger coverage
         if: always()
-        run: .swagger-coverage-commandline/bin/swagger-coverage-commandline -s http://localhost:4111/v3/api-docs -i target/swagger-coverage-output
+        run: |
+          .swagger-coverage-commandline/bin/swagger-coverage-commandline \
+            -s http://localhost:4111/v3/api-docs \
+            -i target/swagger-coverage-output \
+            -f html \
+            -o swagger-coverage-report.html
 
       - name: Load test report history
         uses: actions/checkout@v2
@@ -59,7 +64,9 @@ jobs:
 
       - name: Build Swagger coverage report
         if: always()
-        run: sudo cp swagger-coverage-report.html allure-history/${{ github.run_number }}
+        run: |
+          mkdir -p allure-history/${{ github.run_number }}
+          cp swagger-coverage-report.html allure-history/${{ github.run_number }}
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
@@ -72,4 +79,4 @@ jobs:
       - name: Clean up services
         if: always()
         run: cd infra && docker compose down
-#        дебаг 3
+#        дебаг 4
