@@ -55,7 +55,7 @@ jobs:
           path: gh-pages
 
       - name: Build test report
-        uses: simple-elf/allure-report-action@master
+        uses: simple-elf/allure-report-action@v1.7
         if: always()
         with:
           gh_pages: gh-pages
@@ -64,9 +64,7 @@ jobs:
 
       - name: Build Swagger coverage report
         if: always()
-        run: |
-          mkdir -p allure-history/${{ github.run_number }}
-          cp swagger-coverage-report.html allure-history/${{ github.run_number }}
+        run: cp swagger-coverage-report.html allure-history/${{ github.run_number }}
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
@@ -75,6 +73,9 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+
+      - name: Check Docker version
+        run: docker version
 
       - name: Clean up services
         if: always()
