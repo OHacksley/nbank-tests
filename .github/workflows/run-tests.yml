@@ -36,6 +36,7 @@ jobs:
           APIBASEURL: http://localhost:4111
           UIBASEURL: http://frontend
           UIREMOTE: http://localhost:4444/wd/hub
+          APIVERSION: /api/v1
 
       - name: Run Swagger coverage
         if: always()
@@ -64,11 +65,11 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         if: always()
         with:
-          github_token: ${{ secrets.DOCKERHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
 
       - name: Clean up services
         if: always()
-        run: docker compose down
-#        дебаг 2
+        run: cd infra && docker compose down
+#        дебаг 3
