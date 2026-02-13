@@ -71,4 +71,4 @@ jobs:
       - name: Clean up services
         if: always()
         run: docker compose down
-#        дебаг 1
+#        дебаг 2
