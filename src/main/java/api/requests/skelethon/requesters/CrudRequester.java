@@ -25,6 +25,9 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
     public CrudRequester(Endpoint endpoint, RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
         super(endpoint, requestSpecification, responseSpecification);
     }
+    public CrudRequester(Endpoint endpoint, RequestSpecification baseSpec, ResponseSpecification respSpec, String testCaseName) {
+        super(endpoint, common.utils.CoverageUtils.withCoverage(baseSpec, testCaseName), respSpec);
+    }
 
     @Override
     public ValidatableResponse post(BaseModel model) {

@@ -39,7 +39,7 @@ public class CreateUsersDepositTest extends BaseTest {
         DepositResponse depositResponse = new ValidatedCrudRequester<DepositResponse>(Endpoint.ACCOUNT_DEPOSIT, RequestSpecs.authAsUser(
                 user1.getUsername(),
                 user1.getPassword()),
-                ResponseSpecs.requestReturnsOK())
+                ResponseSpecs.requestReturnsOK(), "UsersDepositCorrectSum")
                 .post(depositRequest);
         //Проверки "основного" тела
         softly.assertThat(depositResponse.getId()).isEqualTo(accountId);
@@ -59,6 +59,8 @@ public class CreateUsersDepositTest extends BaseTest {
     @MethodSource("depositInvalidValues")
     @ParameterizedTest
     public void depositWithInvalidData(double balance, String errorValue) {
+        String testCaseId = String.format("adminCanNotCreateUserWithInvalidData_%s_%s", balance, errorValue);
+
         CreateUserRequest userRequest = AdminAPISteps.createUser();
 
         CreateAccountResponse accountResponse = AdminAPISteps.createUserAccount(userRequest);
@@ -73,7 +75,7 @@ public class CreateUsersDepositTest extends BaseTest {
 
         new CrudRequester(Endpoint.ACCOUNT_DEPOSIT, RequestSpecs.authAsUser(
                 userRequest.getUsername(),
-                userRequest.getPassword()), ResponseSpecs.requestReturnsBadRequestWithText(errorValue))
+                userRequest.getPassword()), ResponseSpecs.requestReturnsBadRequestWithText(errorValue), testCaseId)
                 .post(depositRequest);
 
         CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
@@ -106,7 +108,7 @@ public class CreateUsersDepositTest extends BaseTest {
 
             new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
                     RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                    ResponseSpecs.requestReturnsForbiddenWithText(Message_And_Errors_text.DEPOSIT_FORBIDDEN.getValue()))
+                    ResponseSpecs.requestReturnsForbiddenWithText(Message_And_Errors_text.DEPOSIT_FORBIDDEN.getValue()), "depositToForeignAcc")
                     .post(depositRequest);
 
             CustomerProfileResponse checkBalance = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
@@ -134,7 +136,7 @@ public class CreateUsersDepositTest extends BaseTest {
 
         new CrudRequester(Endpoint.ACCOUNT_DEPOSIT,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
-                ResponseSpecs.requestReturnsForbiddenWithText(Message_And_Errors_text.DEPOSIT_FORBIDDEN.getValue()))
+                ResponseSpecs.requestReturnsForbiddenWithText(Message_And_Errors_text.DEPOSIT_FORBIDDEN.getValue()), "depositToIncorrectAcc")
                 .post(depositRequest);
 
         assertThat(DataBaseSteps.getAccountBalanceByAccountNumber(accountResponse.getAccountNumber())).isZero();

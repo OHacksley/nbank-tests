@@ -24,7 +24,8 @@ public class CreateAccountTest extends BaseTest {
 
         CreateAccountResponse createAccountResponse = new ValidatedCrudRequester<CreateAccountResponse>
                 (Endpoint.ACCOUNTS, RequestSpecs.authAsUser(user.getUsername(), user.getPassword()),
-                ResponseSpecs.entityWasCreated())
+                ResponseSpecs.entityWasCreated(),
+                        "userCanCreateAccountTest")
                 .post(null);
 
         AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createAccountResponse.getAccountNumber());

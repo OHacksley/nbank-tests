@@ -1,3 +1,141 @@
+#name: Run tests
+#
+#on: [ push, workflow_dispatch ]
+#
+#jobs:
+#  run-tests:
+#    name: Set up services (review apps) and run tests
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#
+#      - name: Make mvnw executable
+#        run: chmod +x mvnw
+#
+#      - name: Set up JDK 21
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '21'
+#          distribution: 'temurin'
+#
+##      #          сбрасываем кеш
+##      - name: Clean Docker cache
+##        run: docker system prune -f
+#
+#      - name: Cache Maven repository
+#        uses: actions/cache@v4
+#        with:
+#          path: ~/.m2/repository
+#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-maven-
+#
+#      - name: Set up services
+#        run: cd infra && bash restart_docker.sh
+#
+#      ##       логирование селеноида
+#      #      - name: Debug Selenoid
+#      #        if: always()
+#      #        run: |
+#      #          docker logs selenoid || echo "Selenoid container not found"
+#      #          docker ps -a | grep selenoid
+#
+#      #          докер версия
+##      - name: Debug Docker images
+##        if: always()
+##        run: |
+##          echo "=== ВСЕ образы ==="
+##          docker images
+##          echo ""
+##          echo "=== Поиск браузеров ==="
+##          docker images | grep -E "chrome|firefox|opera" || echo "❌ Образы браузеров НЕ найдены!"
+##          echo ""
+##          echo "=== Проверка browsers.json ==="
+##          cat infra/config/browsers.json
+##
+##      - name: Debug Selenoid
+##        if: always()
+##        run: |
+##          docker logs infra-selenoid-1
+##          docker ps -a | grep selenoid
+##
+##      - name: Check browser images
+##        run: docker images | grep -E "chrome|firefox|opera"
+##
+##      - name: Selenoid logs during tests
+##        run: docker logs infra-selenoid-1 --tail 50
+##
+##      - name: Network check
+##        run: |
+##          docker exec infra-selenoid-1 curl -v http://frontend:80 || echo "Frontend unreachable"
+#
+#      - name: Run tests
+#        run: ./mvnw clean test
+#        env:
+#          APIBASEURL: http://localhost:4111
+#          UIBASEURL: http://frontend
+#          UIREMOTE: http://localhost:4444/wd/hub
+#          APIVERSION: /api/v1
+#
+#      #      - name: Run Swagger coverage
+#      #        if: always()
+#      #        run: |
+#      #          .swagger-coverage-commandline/bin/swagger-coverage-commandline \
+#      #            -s http://localhost:4111/v3/api-docs \
+#      #            -i target/swagger-coverage-output \
+#      #            -f html \
+#      #            -o swagger-coverage-report.html
+#
+#      - name: Load test report history
+#        uses: actions/checkout@v2
+#        if: always()
+#        with:
+#          ref: gh-pages
+#          path: gh-pages
+#
+#      - name: Build test report
+#        uses: simple-elf/allure-report-action@master
+#        if: always()
+#        with:
+#          gh_pages: gh-pages
+#          allure_results: target/allure-results
+#          allure_history: allure-history
+#
+#      - name: Setup Swagger coverage
+#        if: always()
+#        run: |
+#          wget https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
+#          unzip swagger-coverage-1.5.0.zip
+#          chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
+#
+#      - name: Run Swagger coverage
+#        if: always()
+#        run: |
+#          mkdir -p allure-history/${{ github.run_number }}
+#          ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
+#            -s http://localhost:4111/v3/api-docs \
+#            -i target/swagger-coverage-output
+#
+#      #      - name: Build Swagger coverage report
+#      #        if: always()
+#      #        run: cp swagger-coverage-report.html allure-history/${{ github.run_number }}
+#
+#      - name: Publish test report
+#        uses: peaceiris/actions-gh-pages@v3
+#        if: always()
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          publish_branch: gh-pages
+#          publish_dir: allure-history
+#
+##      - name: Check Docker version
+##        run: docker version
+#
+#      - name: Clean up services
+#        if: always()
+#        run: cd infra && docker compose down
+##        дебаг 4
 name: Run tests
 
 on: [ push, workflow_dispatch ]
@@ -18,56 +156,17 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      #          сбрасываем кеш
-      - name: Clean Docker cache
-        run: docker system prune -f
 
-      #      - name: Cache Maven repository
-      #        uses: actions/cache@v4
-      #        with:
-      #          path: ~/.m2/repository
-      #          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-      #          restore-keys: |
-      #            ${{ runner.os }}-maven-
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Set up services
         run: cd infra && bash restart_docker.sh
-
-      #      #      логирование селеноида
-      #      - name: Debug Selenoid
-      #        if: always()
-      #        run: |
-      #          docker logs selenoid || echo "Selenoid container not found"
-      #          docker ps -a | grep selenoid
-
-      #          докер версия
-      - name: Debug Docker images
-        if: always()
-        run: |
-          echo "=== ВСЕ образы ==="
-          docker images
-          echo ""
-          echo "=== Поиск браузеров ==="
-          docker images | grep -E "chrome|firefox|opera" || echo "❌ Образы браузеров НЕ найдены!"
-          echo ""
-          echo "=== Проверка browsers.json ==="
-          cat infra/config/browsers.json
-
-      - name: Debug Selenoid
-        if: always()
-        run: |
-          docker logs infra-selenoid-1
-          docker ps -a | grep selenoid
-
-      - name: Check browser images
-        run: docker images | grep -E "chrome|firefox|opera"
-
-      - name: Selenoid logs during tests
-        run: docker logs infra-selenoid-1 --tail 50
-
-      - name: Network check
-        run: |
-          docker exec infra-selenoid-1 curl -v http://frontend:80 || echo "Frontend unreachable"  
 
       - name: Run tests
         run: ./mvnw clean test
@@ -77,48 +176,40 @@ jobs:
           UIREMOTE: http://localhost:4444/wd/hub
           APIVERSION: /api/v1
 
-      #      - name: Run Swagger coverage
-      #        if: always()
-      #        run: |
-      #          .swagger-coverage-commandline/bin/swagger-coverage-commandline \
-      #            -s http://localhost:4111/v3/api-docs \
-      #            -i target/swagger-coverage-output \
-      #            -f html \
-      #            -o swagger-coverage-report.html
-
       - name: Load test report history
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         if: always()
         with:
           ref: gh-pages
           path: gh-pages
 
-      - name: Build test report
-        uses: simple-elf/allure-report-action@master
+      - name: Build Allure report
         if: always()
-        with:
-          gh_pages: gh-pages
-          allure_results: target/allure-results
-          allure_history: allure-history
+        run: |
+          mkdir -p test-report/${{ github.run_number }}
+          # Генерируем Allure отчет в нужную директорию
+          ./mvnw allure:report
+          cp -r target/site/allure-maven-plugin/* test-report/${{ github.run_number }}/allure-report/
 
       - name: Setup Swagger coverage
         if: always()
         run: |
-          wget https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
-          unzip swagger-coverage-1.5.0.zip
-          chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
+          wget https://github.com/slashdevops/swagger-coverage/releases/download/v2.5.0/swagger-coverage-commandline-2.5.0.jar
+          mkdir -p swagger-coverage-bin
+          mv swagger-coverage-commandline-2.5.0.jar swagger-coverage-bin/swagger-coverage.jar
 
       - name: Run Swagger coverage
         if: always()
         run: |
-          mkdir -p allure-history/${{ github.run_number }}
-          ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
-            -s http://localhost:4111/v3/api-docs \
-            -i target/swagger-coverage-output
-
-      #      - name: Build Swagger coverage report
-      #        if: always()
-      #        run: cp swagger-coverage-report.html allure-history/${{ github.run_number }}
+          # Скачиваем swagger.json с сервера
+          curl -f http://localhost:4111/v3/api-docs -o swagger.json
+          
+          # Генерируем Swagger coverage в нужную директорию
+          java -jar swagger-coverage-bin/swagger-coverage.jar \
+            -s swagger.json \
+            -i target/swagger-coverage-output \
+            -f html \
+            -o test-report/${{ github.run_number }}/swagger-coverage
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
@@ -126,12 +217,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: allure-history
-
-      - name: Check Docker version
-        run: docker version
+          publish_dir: test-report
 
       - name: Clean up services
         if: always()
         run: cd infra && docker compose down
-#        дебаг 4

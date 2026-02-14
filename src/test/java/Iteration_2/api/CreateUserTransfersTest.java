@@ -77,7 +77,7 @@ public class CreateUserTransfersTest extends BaseTest {
 
         TransferResponse transferResponse = new ValidatedCrudRequester<TransferResponse>(Endpoint.TRANSFER,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
-                ResponseSpecs.requestReturnsOK())
+                ResponseSpecs.requestReturnsOK(), "tranfserValidSumm")
                 .post(transferRequest);
 
         softly.assertThat(transferResponse.getMessage()).isEqualTo(Message_And_Errors_text.TRANSFER_SUCCES.getValue());
@@ -112,6 +112,7 @@ public class CreateUserTransfersTest extends BaseTest {
     @MethodSource("transferInvalidValues")
     @ParameterizedTest
     public void transferWithInvalidData(Long User1ID, Long User2ID, Double amount, String errorValue) {
+        String testCaseId = String.format("adminCanNotCreateUserWithInvalidData_%s_%s_%s_%s", User1ID, User2ID, amount, errorValue);
 
         CreateUserRequest account1 = AdminAPISteps.createUser();
 
@@ -143,7 +144,7 @@ public class CreateUserTransfersTest extends BaseTest {
 
         new CrudRequester(Endpoint.TRANSFER,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
-                ResponseSpecs.requestReturnsBadRequestWithText(errorValue))
+                ResponseSpecs.requestReturnsBadRequestWithText(errorValue), testCaseId)
                 .post(transferRequest);
 
         CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
@@ -195,7 +196,7 @@ public class CreateUserTransfersTest extends BaseTest {
 
         new CrudRequester(Endpoint.TRANSFER,
                 RequestSpecs.authAsUser(account1.getUsername(), account1.getPassword()),
-                ResponseSpecs.requestReturnsBadRequestWithText(Message_And_Errors_text.TRANSFER_INVALID.getValue()))
+                ResponseSpecs.requestReturnsBadRequestWithText(Message_And_Errors_text.TRANSFER_INVALID.getValue()), "transferWithBalanceLessTransferSumm")
                 .post(transferRequest);
 
         CustomerProfileResponse getProfileResponse = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
