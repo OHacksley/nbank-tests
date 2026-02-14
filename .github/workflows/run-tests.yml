@@ -30,6 +30,17 @@ jobs:
       - name: Set up services
         run: cd infra && bash restart_docker.sh
 
+#      логирование селеноида
+      - name: Debug Selenoid
+        if: always()
+        run: |
+          docker logs selenoid || echo "Selenoid container not found"
+          docker ps -a | grep selenoid
+
+#          докер версия
+      - name: Check Docker version
+        run: docker version
+
       - name: Run tests
         run: ./mvnw clean test -q
         env:
