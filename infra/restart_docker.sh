@@ -14,11 +14,7 @@ fi
 
 # Извлекаем все значения .image через jq
 #images=$(jq -r '.chrome.versions[].image, .firefox.versions[].image, .opera.versions[].image' "$json_file" | grep -v '^$')
-images=$(jq -r '
-#  .chrome.versions[]?.image,
-#  .firefox.versions[]?.image,
-#  .opera.versions[]?.image
-#' "$json_file" | grep -v '^$' | sort -u)
+images=$(jq -r '.chrome.versions[].image, .firefox.versions[].image, .opera.versions[].image' "$json_file" 2>/dev/null | grep -v '^$' || echo "")
 
 
 # Пробегаем по каждому образу и выполняем docker pull
