@@ -41,8 +41,17 @@ jobs:
       #          docker ps -a | grep selenoid
 
       #          докер версия
-      - name: Check Docker version
-        run: docker version
+      - name: Debug Docker images
+        if: always()
+        run: |
+          echo "=== ВСЕ образы ==="
+          docker images
+          echo ""
+          echo "=== Поиск браузеров ==="
+          docker images | grep -E "chrome|firefox|opera" || echo "❌ Образы браузеров НЕ найдены!"
+          echo ""
+          echo "=== Проверка browsers.json ==="
+          cat infra/config/browsers.json
 
       - name: Debug Selenoid
         if: always()
