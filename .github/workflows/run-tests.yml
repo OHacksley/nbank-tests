@@ -183,32 +183,36 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
+      - name: Setup Swagger coverage
+        if: always()
+        run: |
+          wget https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
+          unzip swagger-coverage-1.5.0.zip
+          chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
+
+      - name: Run Swagger coverage
+        if: always()
+        run: |
+          # Создаем директорию для swagger-coverage отчета
+          mkdir -p test-report/${{ github.run_number }}/swagger-coverage
+
+          # Запускаем swagger-coverage
+          ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
+            -s http://localhost:4111/v3/api-docs \
+            -i target/swagger-coverage-output
+
+          # Копируем сгенерированный отчет в нужную подпапку
+          cp swagger-coverage-report.html test-report/${{ github.run_number }}/swagger-coverage/
+
       - name: Generate Allure report
         if: always()
         run: |
-          mkdir -p test-report/${{ github.run_number }}
+          # Создаем директорию для allure отчета
+          mkdir -p test-report/${{ github.run_number }}/allure-report
           # Используем Allure Maven Plugin для генерации отчета
           ./mvnw allure:report -Dallure.results.directory=target/allure-results
           # Копируем сгенерированный отчет в нужную директорию
           cp -r target/site/allure-maven-plugin/* test-report/${{ github.run_number }}/allure-report/ || true
-
-      - name: Setup Swagger coverage
-        if: always()
-        run: |
-          wget https://github.com/viclovsky/swagger-coverage/releases/download/2.1.0/swagger-coverage-2.1.0.zip
-          unzip swagger-coverage-2.1.0.zip
-          chmod +x swagger-coverage-commandline-2.1.0/bin/swagger-coverage-commandline
-
-      - name: Generate Swagger coverage report
-        if: always()
-        run: |
-          curl -f http://localhost:4111/v3/api-docs -o swagger.json
-          mkdir -p test-report/${{ github.run_number }}/swagger-coverage
-          ./swagger-coverage-commandline-2.1.0/bin/swagger-coverage-commandline \
-            -s swagger.json \
-            -i target/swagger-coverage-output \
-            -f html \
-            -o test-report/${{ github.run_number }}/swagger-coverage
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
