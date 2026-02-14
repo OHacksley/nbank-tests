@@ -192,24 +192,18 @@ jobs:
           # Копируем сгенерированный отчет в нужную директорию
           cp -r target/site/allure-maven-plugin/* test-report/${{ github.run_number }}/allure-report/ || true
 
-      - name: Download and setup Swagger coverage
+      - name: Setup Swagger coverage
         if: always()
         run: |
-          # Используем проверенную версию swagger-coverage
-          wget https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-commandline-1.5.0.zip
-          unzip -q swagger-coverage-commandline-1.5.0.zip
+          wget https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
+          unzip swagger-coverage-1.5.0.zip
           chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
 
       - name: Generate Swagger coverage report
         if: always()
         run: |
-          # Скачиваем swagger.json
           curl -f http://localhost:4111/v3/api-docs -o swagger.json
-          
-          # Создаем директорию для отчета
           mkdir -p test-report/${{ github.run_number }}/swagger-coverage
-          
-          # Генерируем отчет
           ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
             -s swagger.json \
             -i target/swagger-coverage-output \
