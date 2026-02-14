@@ -69,3 +69,17 @@ done
 echo ""
 echo ">>> Запуск Docker Compose окружения"
 docker compose -f docker-compose.yml up -d
+echo "Ожидание запуска сервисов (15 секунд)...."
+sleep 15
+
+echo ">>> Проверка запущенных контейнеров"
+docker ps
+
+echo ">>> Проверка доступности фронтенда из Selenoid"
+if docker exec infra-selenoid-1 wget -O- -T 5 http://frontend:80 2>/dev/null | grep -q "html"; then
+    echo "✅ Фронтенд доступен из Selenoid"
+else
+    echo "⚠️  Фронтенд не отвечает из Selenoid, но тесты могут работать через localhost"
+fi
+
+echo ">>> Готово!"
