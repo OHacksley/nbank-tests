@@ -47,6 +47,8 @@ services:
 
   selenoid:
     image: aerokube/selenoid:1.11.2
+    ports:
+      - "4444:4444"
     environment:
       - DOCKER_API_VERSION=1.44
     volumes:
