@@ -214,6 +214,54 @@ jobs:
           # Копируем сгенерированный отчет в нужную директорию
           cp -r target/site/allure-maven-plugin/* test-report/${{ github.run_number }}/allure-report/ || true
 
+      - name: Create or update index.html
+        if: always()
+        run: |
+            # Создаем/обновляем index.html с навигацией по всем отчетам
+            cat > gh-pages/index.html << 'EOF'
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Test Reports</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; }
+                    h1 { color: #333; }
+                    ul { list-style-type: none; padding: 0; }
+                    li { margin: 10px 0; }
+                    a { text-decoration: none; color: #0366d6; }
+                    a:hover { text-decoration: underline; }
+                </style>
+            </head>
+            <body>
+                <h1>Test Reports</h1>
+                <ul>
+            EOF
+            
+            # Добавляем ссылки на все существующие отчеты
+            if [ -d "gh-pages/test-report" ]; then
+              for dir in $(ls -r gh-pages/test-report/); do
+                echo "<li>Run $dir: " >> gh-pages/index.html
+                echo "<a href=\"test-report/$dir/allure-report/index.html\">Allure Report</a> | " >> gh-pages/index.html
+                echo "<a href=\"test-report/$dir/swagger-coverage/swagger-coverage-report.html\">Swagger Coverage</a>" >> gh-pages/index.html
+                echo "</li>" >> gh-pages/index.html
+              done
+            fi
+            
+            cat >> gh-pages/index.html << 'EOF'
+                </ul>
+            </body>
+            </html>
+            EOF
+
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: gh-pages
+          force_orphan: false
+
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
         if: always()
