@@ -46,9 +46,20 @@ services:
       - nbank-network
 
   selenoid:
-    image: aerokube/selenoid:latest
+#    image: aerokube/selenoid:1.11.2
+#    ports:
+#      - "4444:4444"
+#    environment:
+#      - DOCKER_API_VERSION=1.44
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - ./config:/etc/selenoid
+#    command: [ "-conf", "/etc/selenoid/browsers.json", "-limit", "10" ]
+    image: aerokube/selenoid:latest-release
     ports:
       - "4444:4444"
+    environment:
+      - DOCKER_API_VERSION=1.44
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/:/etc/selenoid/:ro

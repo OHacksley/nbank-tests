@@ -18,6 +18,10 @@ public class ValidatedCrudRequester <T extends BaseModel> extends HttpRequest im
         super(endpoint, requestSpecification, responseSpecification);
         this.crudRequester = new CrudRequester(endpoint, requestSpecification, responseSpecification);
     }
+    public ValidatedCrudRequester(Endpoint endpoint, RequestSpecification baseSpec, ResponseSpecification respSpec, String testCaseName) {
+        super(endpoint, common.utils.CoverageUtils.withCoverage(baseSpec, testCaseName), respSpec);
+        this.crudRequester = new CrudRequester(endpoint, common.utils.CoverageUtils.withCoverage(baseSpec, testCaseName), respSpec);
+    }
 
     @Override
     public T post(BaseModel model) {

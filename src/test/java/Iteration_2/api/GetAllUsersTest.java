@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,9 @@ public class GetAllUsersTest {
                 .accept(ContentType.JSON)
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .get("http://localhost:4111/api/v1/admin/users")
-                .then().statusCode(200);
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK);
 
     }
 

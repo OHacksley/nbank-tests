@@ -18,15 +18,5 @@
         "path": "/wd/hub"
       }
     }
-  },
-  "opera": {
-    "default": "76.0",
-    "versions": {
-      "76.0": {
-        "image": "selenoid/opera:76.0",
-        "port": "4444",
-        "path": "/wd/hub"
-      }
-    }
   }
 }

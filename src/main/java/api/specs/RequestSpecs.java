@@ -31,9 +31,7 @@ public class RequestSpecs {
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
                 .addFilters(List.of(new RequestLoggingFilter(),
-                        new ResponseLoggingFilter(), new AllureRestAssured(), new SwaggerCoverageRestAssured(
-                                new FileSystemOutputWriter(Paths.get("target/" + OUTPUT_DIRECTORY))
-                        )))
+                        new ResponseLoggingFilter(), new AllureRestAssured()))
                 .setBaseUri(Config.getProperty("apiBaseUrl"));
     }
     public static RequestSpecification unauthSpec() {

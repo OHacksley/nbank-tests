@@ -34,7 +34,8 @@ public class CreateUserTest extends BaseTest {
         CreateUserResponse createUserResponse = new ValidatedCrudRequester<CreateUserResponse>
                 (Endpoint.ADMIN_USER,
                         RequestSpecs.adminSpec(),
-                        ResponseSpecs.entityWasCreated())
+                        ResponseSpecs.entityWasCreated(),
+                        "adminCanCreateUserWithCorrectData")
                 .post(createUserRequest);
 
         ModelAssertions.assertThatModels(createUserRequest,createUserResponse).match();
@@ -114,6 +115,7 @@ public class CreateUserTest extends BaseTest {
     @MethodSource("userInvalidData")
     @ParameterizedTest
     public void adminCanNotCreateUserWithInvalidData(String username, String password, String role, String errorKey, List<String> errorValues) {
+        String testCaseId = String.format("adminCanNotCreateUserWithInvalidData_%s_%s_%s", username.trim(), password, role);
         CreateUserRequest createUserRequest = CreateUserRequest.builder()
                 .username(username)
                 .password(password)
@@ -121,7 +123,7 @@ public class CreateUserTest extends BaseTest {
                 .build();
 
         new CrudRequester(Endpoint.ADMIN_USER, RequestSpecs.adminSpec(),
-                ResponseSpecs.requestReturnsBadRequest(errorKey, errorValues))
+                ResponseSpecs.requestReturnsBadRequest(errorKey, errorValues), testCaseId)
                 .post(createUserRequest);
 
         assertNull(DataBaseSteps.getUserByUsername(createUserRequest.getUsername()));
