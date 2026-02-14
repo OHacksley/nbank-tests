@@ -183,29 +183,34 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      - name: Build Allure report
+      - name: Generate Allure report
         if: always()
         run: |
           mkdir -p test-report/${{ github.run_number }}
-          # Генерируем Allure отчет в нужную директорию
-          ./mvnw allure:report
-          cp -r target/site/allure-maven-plugin/* test-report/${{ github.run_number }}/allure-report/
+          # Используем Allure Maven Plugin для генерации отчета
+          ./mvnw allure:report -Dallure.results.directory=target/allure-results
+          # Копируем сгенерированный отчет в нужную директорию
+          cp -r target/site/allure-maven-plugin/* test-report/${{ github.run_number }}/allure-report/ || true
 
-      - name: Setup Swagger coverage
+      - name: Download and setup Swagger coverage
         if: always()
         run: |
-          wget https://github.com/slashdevops/swagger-coverage/releases/download/v2.5.0/swagger-coverage-commandline-2.5.0.jar
-          mkdir -p swagger-coverage-bin
-          mv swagger-coverage-commandline-2.5.0.jar swagger-coverage-bin/swagger-coverage.jar
+          # Используем проверенную версию swagger-coverage
+          wget https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-commandline-1.5.0.zip
+          unzip -q swagger-coverage-commandline-1.5.0.zip
+          chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
 
-      - name: Run Swagger coverage
+      - name: Generate Swagger coverage report
         if: always()
         run: |
-          # Скачиваем swagger.json с сервера
+          # Скачиваем swagger.json
           curl -f http://localhost:4111/v3/api-docs -o swagger.json
           
-          # Генерируем Swagger coverage в нужную директорию
-          java -jar swagger-coverage-bin/swagger-coverage.jar \
+          # Создаем директорию для отчета
+          mkdir -p test-report/${{ github.run_number }}/swagger-coverage
+          
+          # Генерируем отчет
+          ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
             -s swagger.json \
             -i target/swagger-coverage-output \
             -f html \
@@ -222,3 +227,4 @@ jobs:
       - name: Clean up services
         if: always()
         run: cd infra && docker compose down
+
