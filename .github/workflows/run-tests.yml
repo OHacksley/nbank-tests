@@ -45,7 +45,7 @@ jobs:
         run: docker version
 
       - name: Run tests
-        run: ./mvnw clean test -q
+        run: ./mvnw clean test
         env:
           APIBASEURL: http://localhost:4111
           UIBASEURL: http://frontend
@@ -96,7 +96,6 @@ jobs:
           ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
             -s http://localhost:4111/v3/api-docs \
             -i target/swagger-coverage-output \
-            -f html \
             -o swagger-coverage-report.html
           cp swagger-coverage-report.html allure-history/${{ github.run_number }}
 
