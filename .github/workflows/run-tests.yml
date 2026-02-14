@@ -18,9 +18,9 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-#          сбрасываем кеш
-      - name: Clean Docker cache
-        run: docker system prune -a -f
+##          сбрасываем кеш
+#      - name: Clean Docker cache
+#        run: docker system prune -a -f
 
       - name: Cache Maven repository
         uses: actions/cache@v4
@@ -51,6 +51,12 @@ jobs:
           UIBASEURL: http://frontend
           UIREMOTE: http://localhost:4444/wd/hub
           APIVERSION: /api/v1
+
+      - name: Debug Selenoid
+        if: always()
+        run: |
+          docker logs infra-selenoid-1
+          docker ps -a | grep selenoid
 
       - name: Run Swagger coverage
         if: always()
