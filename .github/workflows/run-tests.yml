@@ -214,33 +214,6 @@ jobs:
           # Копируем сгенерированный отчет в нужную директорию
           cp -r target/site/allure-maven-plugin/* test-report/${{ github.run_number }}/allure-report/ || true
 
-      - name: Create main index page
-        run: |
-          cat > index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <title>Test Reports</title>
-              <style>
-                  body { font-family: Arial, sans-serif; margin: 40px; }
-                  .report { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
-                  a { color: #0366d6; text-decoration: none; }
-                  a:hover { text-decoration: underline; }
-              </style>
-          </head>
-          <body>
-              <h1>Test Reports</h1>
-              <div class="report">
-                  <h2>Run #${{ github.run_number }}</h2>
-                  <ul>
-                      <li><a href="test-report/${{ github.run_number }}/allure-report/index.html">Allure Report</a></li>
-                      <li><a href="test-report/${{ github.run_number }}/swagger-coverage/swagger-coverage-report.html">Swagger Coverage Report</a></li>
-                  </ul>
-              </div>
-          </body>
-          </html>
-          EOF
-
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
         if: always()
