@@ -5,7 +5,7 @@
       "latest": {
         "image": "selenoid/vnc_chrome:latest",
         "port": "4444",
-        "path": "/"
+        "path": "/wd/hub"
       }
     }
   },
