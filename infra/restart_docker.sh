@@ -26,14 +26,12 @@
 #docker compose -f docker-compose.yml up -d
 #echo "Ожидание запуска сервисов (30 секунд)...."
 
+
 echo ">>> Остановить Docker Compose"
 docker compose -f ./docker-compose.yml down
 
 echo ">>> Удаление старых неиспользуемых образов"
 docker image prune -f
-
-echo ">>> Удаление старых образов браузеров (если есть)"
-docker rmi selenoid/chrome:latest selenoid/firefox:latest selenoid/opera:latest 2>/dev/null || true
 
 echo ">>> Docker pull все образы браузеров (актуальные vnc версии)"
 
@@ -46,19 +44,34 @@ if ! command -v jq &> /dev/null; then
     sudo apt-get update && sudo apt-get install -y jq
 fi
 
-# Извлекаем все значения .image через jq (с поддержкой вложенных версий)
+# ДИАГНОСТИКА: покажем содержимое browsers.json
+echo ">>> Содержимое browsers.json:"
+cat "$json_file"
+
+# Извлекаем все значения .image через jq
 images=$(jq -r '
   .chrome.versions[]?.image,
   .firefox.versions[]?.image,
   .opera.versions[]?.image
 ' "$json_file" | grep -v '^$' | sort -u)
 
-# Проверяем, что нашли образы
+echo ">>> Найденные образы в конфиге:"
+echo "$images" || echo "Ничего не найдено"
+
+# Если образы не найдены - используем browsers.json напрямую через grep (костыль)
+if [ -z "$images" ]; then
+    echo "❌ jq не смог извлечь образы. Пробуем через grep..."
+    images=$(grep -oP 'image": "\K[^"]+' "$json_file" | sort -u)
+fi
+
+# Если всё ещё пусто - жёстко задаём правильные образы
 if [ -z "$images" ]; then
     echo "❌ Не найдены образы в browsers.json"
     echo "Используем образы по умолчанию:"
     images="selenoid/vnc_chrome:latest selenoid/vnc_firefox:latest selenoid/vnc_opera:latest"
 fi
+
+echo ">>> Будем качать: $images"
 
 # Пробегаем по каждому образу и выполняем docker pull
 for image in $images; do
@@ -69,6 +82,7 @@ done
 echo ""
 echo ">>> Запуск Docker Compose окружения"
 docker compose -f docker-compose.yml up -d
+
 echo "Ожидание запуска сервисов (15 секунд)...."
 sleep 15
 
