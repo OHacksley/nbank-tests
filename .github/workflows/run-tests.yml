@@ -190,29 +190,44 @@ jobs:
           unzip swagger-coverage-1.5.0.zip
           chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
 
-      - name: Run Swagger coverage
+      - name: Run Swagger coverage and copy report
         if: always()
         run: |
-          # Создаем директорию для swagger-coverage отчета
-          mkdir -p test-report/${{ github.run_number }}/swagger-coverage
-
           # Запускаем swagger-coverage
           ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
-            -s http://localhost:4111/v3/api-docs \
-            -i target/swagger-coverage-output
+          -s http://localhost:4111/v3/api-docs \
+          -i target/swagger-coverage-output
+          
+          # Создаем директорию для swagger-coverage отчета
+          mkdir -p gh-pages/test-report/${{ github.run_number }}/swagger-coverage
+          
+          # Копируем ВСЕ файлы отчета swagger-coverage
+          cp -r swagger-coverage-commandline-1.5.0/output/* gh-pages/test-report/${{ github.run_number }}/swagger-coverage/ || echo "Swagger coverage files not found"
+          cp swagger-coverage-report.html gh-pages/test-report/${{ github.run_number }}/swagger-coverage/ || echo "Swagger HTML report not found"
 
-          # Копируем сгенерированный отчет в нужную подпапку
-          cp swagger-coverage-report.html test-report/${{ github.run_number }}/swagger-coverage/
-
-      - name: Generate Allure report
+      - name: Generate and copy Allure report
         if: always()
         run: |
-          # Создаем директорию для allure отчета
-          mkdir -p test-report/${{ github.run_number }}/allure-report
-          # Используем Allure Maven Plugin для генерации отчета
+          # Генерируем Allure отчет
           ./mvnw allure:report -Dallure.results.directory=target/allure-results
-          # Копируем сгенерированный отчет в нужную директорию
-          cp -r target/site/allure-maven-plugin/* test-report/${{ github.run_number }}/allure-report/ || true
+          
+          # Создаем директорию для allure отчета
+          mkdir -p gh-pages/test-report/${{ github.run_number }}/allure-report
+          
+          # Копируем ВСЕ файлы allure отчета
+          cp -r target/site/allure-maven-plugin/* gh-pages/test-report/${{ github.run_number }}/allure-report/ || echo "Allure report files not found"
+
+      - name: Debug file structure before index creation
+        if: always()
+        run: |
+          echo "=== File structure before creating index ==="
+          find gh-pages -type f -name "*.html" | sort
+          echo ""
+          echo "=== test-report directory contents ==="
+          ls -la gh-pages/test-report/ || echo "test-report directory does not exist"
+          if [ -d "gh-pages/test-report" ]; then
+            find gh-pages/test-report/ -name "*.html" | head -10
+          fi
 
       - name: Create or update index.html
         if: always()
@@ -222,48 +237,59 @@ jobs:
           <!DOCTYPE html>
           <html>
           <head>
-            <title>Test Reports</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 40px; }
-                h1 { color: #333; }
-                ul { list-style-type: none; padding: 0; }
-                li { margin: 10px 0; }
-                a { text-decoration: none; color: #0366d6; }
-                a:hover { text-decoration: underline; }
-            </style>
+              <title>Test Reports</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; }
+                  h1 { color: #333; }
+                  ul { list-style-type: none; padding: 0; }
+                  li { margin: 10px 0; }
+                  a { text-decoration: none; color: #0366d6; }
+                  a:hover { text-decoration: underline; }
+              </style>
           </head>
           <body>
-            <h1>Test Reports</h1>
-            <ul>
+              <h1>Test Reports</h1>
+              <ul>
           EOF
           
           # Добавляем ссылки на все существующие отчеты
           if [ -d "gh-pages/test-report" ]; then
-          for dir in $(ls -r gh-pages/test-report/); do
-            echo "<li>Run $dir: " >> gh-pages/index.html
-            echo "<a href=\"test-report/$dir/allure-report/index.html\">Allure Report</a> | " >> gh-pages/index.html
-            echo "<a href=\"test-report/$dir/swagger-coverage/swagger-coverage-report.html\">Swagger Coverage</a>" >> gh-pages/index.html
-            echo "</li>" >> gh-pages/index.html
-          done
+            for dir in $(ls -r gh-pages/test-report/ 2>/dev/null || echo ""); do
+              echo "<li>Run $dir: " >> gh-pages/index.html
+          
+              # Проверяем существование файлов перед созданием ссылок
+              if [ -f "gh-pages/test-report/$dir/allure-report/index.html" ]; then
+                echo "<a href=\"test-report/$dir/allure-report/index.html\">Allure Report</a> | " >> gh-pages/index.html
+              else
+                echo "<span style='color: red'>Allure Report missing</span> | " >> gh-pages/index.html
+              fi
+          
+              if [ -f "gh-pages/test-report/$dir/swagger-coverage/swagger-coverage-report.html" ]; then
+                echo "<a href=\"test-report/$dir/swagger-coverage/swagger-coverage-report.html\">Swagger Coverage</a>" >> gh-pages/index.html
+              else
+                echo "<span style='color: red'>Swagger Coverage missing</span>" >> gh-pages/index.html
+              fi
+          
+              echo "</li>" >> gh-pages/index.html
+            done
           else
-          echo "<li>No test reports found</li>" >> gh-pages/index.html
+            echo "<li>No test reports found</li>" >> gh-pages/index.html
           fi
           
           cat >> gh-pages/index.html << 'EOF'
-            </ul>
+              </ul>
           </body>
           </html>
           EOF
 
-      # Дополнительный шаг для отладки структуры файлов
-      - name: Debug file structure
+      - name: Debug final file structure
         if: always()
         run: |
-          echo "=== File structure in gh-pages ==="
-          find gh-pages -type f -name "*.html" | sort
+          echo "=== Final file structure ==="
+          find gh-pages -name "*.html" | sort
           echo ""
-          echo "=== test-report directory contents ==="
-          ls -la gh-pages/test-report/ || echo "test-report directory does not exist"
+          echo "=== Contents of current run directory ==="
+          ls -la gh-pages/test-report/${{ github.run_number }}/ || echo "Current run directory not found"
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
