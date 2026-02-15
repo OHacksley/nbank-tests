@@ -115,7 +115,7 @@ public class CreateUserTest extends BaseTest {
     @MethodSource("userInvalidData")
     @ParameterizedTest
     public void adminCanNotCreateUserWithInvalidData(String username, String password, String role, String errorKey, List<String> errorValues) {
-        String testCaseId = String.format("adminCanNotCreateUserWithInvalidData_%s_%s_%s", username.trim(), password, role);
+        String testCaseId = String.format("adminCanNotCreateUserWithInvalidData_%s_%s_%s_%s_%s", username.trim(), password, role, errorKey, errorValues);
         CreateUserRequest createUserRequest = CreateUserRequest.builder()
                 .username(username)
                 .password(password)

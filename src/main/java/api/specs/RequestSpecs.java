@@ -1,39 +1,39 @@
 package api.specs;
 
 import api.configs.Config;
-import com.github.viclovsky.swagger.coverage.FileSystemOutputWriter;
-import com.github.viclovsky.swagger.coverage.SwaggerCoverageRestAssured;
+import api.models.LoginUserRequest;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import api.models.LoginUserRequest;
-import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
 
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.github.viclovsky.swagger.coverage.SwaggerCoverageConstants.OUTPUT_DIRECTORY;
 
 public class RequestSpecs {
 
     private static Map<String, String> authHeaders = new HashMap<>(Map.of("admin", "Basic YWRtaW46YWRtaW4="));
 
 
-    private RequestSpecs() {}
+    private RequestSpecs() {
+    }
+
     private static RequestSpecBuilder defaultRequestBuilder() {
         return new RequestSpecBuilder()
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
-                .addFilters(List.of(new RequestLoggingFilter(),
-                        new ResponseLoggingFilter(), new AllureRestAssured()))
+                .addFilters(List.of(
+                        new RequestLoggingFilter(),
+                        new ResponseLoggingFilter(),
+                        new AllureRestAssured()))
                 .setBaseUri(Config.getProperty("apiBaseUrl"));
     }
+
     public static RequestSpecification unauthSpec() {
         return defaultRequestBuilder().build();
     }
@@ -52,9 +52,9 @@ public class RequestSpecs {
     }
 
     public static String getUserAuthHeader(String username, String password) {
-    String userAuthHeader;
+        String userAuthHeader;
 
-        if(!authHeaders.containsKey("username")) {
+        if (!authHeaders.containsKey("username")) {
             userAuthHeader = new CrudRequester(Endpoint.LOGIN,
                     RequestSpecs.unauthSpec(),
                     ResponseSpecs.requestReturnsOK())
@@ -63,7 +63,7 @@ public class RequestSpecs {
                     .header("Authorization");
 
             authHeaders.put(username, userAuthHeader);
-        }else {
+        } else {
             userAuthHeader = authHeaders.get(username);
         }
         return userAuthHeader;

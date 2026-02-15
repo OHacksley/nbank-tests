@@ -11,7 +11,8 @@ import java.util.List;
 import static org.hamcrest.Matchers.equalTo;
 
 public class ResponseSpecs {
-    private ResponseSpecs() {}
+    private ResponseSpecs() {
+    }
 
     private static ResponseSpecBuilder defaultResponseBuilder() {
         return new ResponseSpecBuilder();
@@ -35,6 +36,7 @@ public class ResponseSpecs {
                 .expectBody(errorKey, Matchers.containsInAnyOrder(errorValues.toArray()))
                 .build();
     }
+
     public static ResponseSpecification requestReturnsBadRequestWithText(String expectedMessage) {
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
@@ -48,6 +50,7 @@ public class ResponseSpecs {
                 .expectBody(equalTo(expectedMessage))
                 .build();
     }
+
     public static ResponseSpecification requestReturnsBadRequestWithContentText(String expectedText) {
         return defaultResponseBuilder()
                 .expectStatusCode(400)
@@ -56,4 +59,9 @@ public class ResponseSpecs {
                 .build();
     }
 
+    public static ResponseSpecification requestUnauthorized() {
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_UNAUTHORIZED)
+                .build();
+    }
 }

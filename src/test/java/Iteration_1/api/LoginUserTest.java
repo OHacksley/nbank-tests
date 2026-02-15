@@ -29,6 +29,20 @@ public class LoginUserTest extends BaseTest {
     }
 
     @Test
+    public void adminIncorrectLogin() {
+        LoginUserRequest userRequest = LoginUserRequest.builder()
+                .username("admin")
+                .password("admin123")
+                .build();
+
+        new ValidatedCrudRequester<CreateUserResponse>(Endpoint.LOGIN,
+                RequestSpecs.unauthSpec(),
+                ResponseSpecs.requestUnauthorized(),
+                "adminCanGenerateAuthTokenTest")
+                .post(userRequest);
+    }
+
+    @Test
     public void userCanGenerateAuthTokenTest() {
 
         CreateUserRequest userRequest = AdminAPISteps.createUser();
