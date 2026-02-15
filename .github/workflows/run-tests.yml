@@ -170,7 +170,7 @@ jobs:
         run: cd infra && bash restart_docker.sh && cd ..
 
       - name: Run tests
-        run: ./mvnw clean test -q -Dallure.results.directory=target/allure-results
+        run: ./mvnw clean test -q
         env:
           APIBASEURL: http://localhost:4111
           UIBASEURL: http://frontend
@@ -195,16 +195,16 @@ jobs:
       - name: Generate Allure report
         if: always()
         run: |
-          ./mvnw allure:report -Dallure.results.directory=target/allure-results
+          ./mvnw allure:report
           echo "Allure report generated at: target/site/allure-maven-plugin/index.html"
 
       - name: Load gh-pages history
         uses: actions/checkout@v4
         if: always()
+        continue-on-error: true
         with:
           ref: gh-pages
           path: gh-pages
-          continue-on-error: true
 
       - name: Prepare reports and index
         if: always()

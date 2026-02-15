@@ -226,8 +226,10 @@
                 <version>2.15.2</version>
                 <configuration>
                     <reportVersion>${allure.version}</reportVersion>
-                    <resultsDirectory>target/allure-results</resultsDirectory>
-                    <reportDirectory>target/site/allure-maven-plugin</reportDirectory>
+                    <!-- директория с результатами в корне проекта -->
+                    <resultsDirectory>${project.basedir}/allure-results</resultsDirectory>
+                    <!-- директория готового HTML-отчёта -->
+                    <reportDirectory>${project.build.directory}/site/allure-maven-plugin</reportDirectory>
                 </configuration>
             </plugin>
         </plugins>
