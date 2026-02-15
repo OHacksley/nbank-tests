@@ -38,7 +38,7 @@ public class LoginUserTest extends BaseTest {
         new ValidatedCrudRequester<CreateUserResponse>(Endpoint.LOGIN,
                 RequestSpecs.unauthSpec(),
                 ResponseSpecs.requestUnauthorized(),
-                "adminCanGenerateAuthTokenTest")
+                "adminIncorrectLogin")
                 .post(userRequest);
     }
 

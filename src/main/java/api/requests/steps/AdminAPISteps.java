@@ -25,7 +25,7 @@ public class AdminAPISteps {
             CreateUserResponse user = new ValidatedCrudRequester<CreateUserResponse>(
                     Endpoint.ADMIN_USER,
                     RequestSpecs.adminSpec(),
-                    ResponseSpecs.entityWasCreated())
+                    ResponseSpecs.entityWasCreated(), "createUser")
                     .post(userRequest);
 
             createdUserId.add(user.getId());
@@ -43,7 +43,7 @@ public class AdminAPISteps {
             CreateAccountResponse accountResponse = new ValidatedCrudRequester<CreateAccountResponse>(
                     Endpoint.ACCOUNTS,
                     RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                    ResponseSpecs.entityWasCreated())
+                    ResponseSpecs.entityWasCreated(), "createUserAccount")
                     .post(userRequest);
 
             return accountResponse;
@@ -57,7 +57,7 @@ public class AdminAPISteps {
             return new ValidatedCrudRequester<CreateUserResponse>(
                     Endpoint.ADMIN_USER,
                     RequestSpecs.adminSpec(),
-                    ResponseSpecs.requestReturnsOK()).getAll(CreateUserResponse[].class);
+                    ResponseSpecs.requestReturnsOK(), "getAllUsers").getAll(CreateUserResponse[].class);
 
         });
     }

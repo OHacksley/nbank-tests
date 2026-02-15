@@ -113,7 +113,7 @@ public class CreateUsersDepositTest extends BaseTest {
 
             CustomerProfileResponse checkBalance = new ValidatedCrudRequester<CustomerProfileResponse>(Endpoint.CUSTOMER_PROFILE,
                     RequestSpecs.authAsUser(userRequest2.getUsername(),
-                            userRequest2.getPassword()), ResponseSpecs.requestReturnsOK())
+                            userRequest2.getPassword()), ResponseSpecs.requestReturnsOK(), "check balance")
                     .getWithoutId();
 
             softly.assertThat(checkBalance.getAccounts().get(0).getBalance()).isEqualTo(0L);
