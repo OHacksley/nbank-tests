@@ -13,7 +13,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.2</junit.version>
-        <allure.version>2.29.1</allure.version>
+        <allure.version>2.29.0</allure.version>
         <checkstyle.version>10.16.0</checkstyle.version>
     </properties>
 
