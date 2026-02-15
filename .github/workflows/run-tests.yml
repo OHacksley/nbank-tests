@@ -135,7 +135,7 @@
 #      - name: Clean up services
 #        if: always()
 #        run: cd infra && docker compose down
-##        дебаг 6
+##        дебаг 7
 name: Run tests
 
 on: [ push, workflow_dispatch ]
