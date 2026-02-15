@@ -176,96 +176,8 @@ jobs:
           UIBASEURL: http://frontend
           UIREMOTE: http://localhost:4444/wd/hub
           APIVERSION: /api/v1
-            
-            # Swagger coverage CLI — используем рабочий URL
-                        - name: Setup Swagger coverage CLI
-                        if: always()
-                        run: |
-                          wget -q https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
-                          unzip -q swagger-coverage-1.5.0.zip
-                          chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
 
-                        - name: Run Swagger coverage
-                          if: always()
-                          run: |
-                            ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
-                              -s http://localhost:4111/v3/api-docs \
-                              -i target/swagger-coverage-output
-
-                        - name: Generate Allure report
-                          if: always()
-                          run: |
-                            ./mvnw allure:report -Dallure.results.directory=target/allure-results
-                            echo "Allure report generated at: target/site/allure-maven-plugin/index.html"
-
-                        - name: Load gh-pages history
-                          uses: actions/checkout@v4
-                          if: always()
-                          with:
-                            ref: gh-pages
-                            path: gh-pages
-                          continue-on-error: true
-
-                        - name: Prepare reports and index
-                          if: always()
-                          run: |
-                            # Базовая директория для отчётов
-                            mkdir -p gh-pages/test-report
-                            
-                            RUN_DIR="gh-pages/test-report/${{ github.run_number }}"
-                            ALLURE_DIR="$RUN_DIR/allure-report"
-                            SWAGGER_DIR="$RUN_DIR/swagger-coverage"
-                            
-                            mkdir -p "$ALLURE_DIR"
-                            mkdir -p "$SWAGGER_DIR"
-                            
-                            # Копируем Allure-отчёт в test-report/<run>/allure-report
-                            if [ -d "target/site/allure-maven-plugin" ]; then
-                              cp -r target/site/allure-maven-plugin/* "$ALLURE_DIR"/
-                            fi
-                            
-                            # Копируем Swagger coverage html в test-report/<run>/swagger-coverage/index.html
-                            if [ -f "swagger-coverage-report.html" ]; then
-                              cp swagger-coverage-report.html "$SWAGGER_DIR/index.html"
-                            fi
-                            
-                            # Пересобираем корневой index.html
-                            cat > gh-pages/index.html << 'EOF'
-                            <!DOCTYPE html>
-                            <html lang="en">
-                            <head>
-                                <meta charset="UTF-8">
-                                <title>Test Reports</title>
-                            </head>
-                            <body>
-                                <h1>Test Reports</h1>
-                                <ul>
-                            EOF
-                            
-                            # Для каждого запуска две ссылки: Allure и Swagger coverage
-                            if [ -d "gh-pages/test-report" ]; then
-                              for dir in $(ls -r gh-pages/test-report/ 2>/dev/null); do
-                                echo "<li>Run $dir: <a href=\"test-report/$dir/allure-report/index.html\">Allure Report</a> | <a href=\"test-report/$dir/swagger-coverage/index.html\">Swagger Coverage</a></li>" >> gh-pages/index.html
-                              done
-                            fi
-                            
-                            cat >> gh-pages/index.html << 'EOF'
-                                </ul>
-                            </body>
-                            </html>
-                            EOF
-
-                        - name: Publish test report
-                          uses: peaceiris/actions-gh-pages@v3
-                          if: always()
-                          with:
-                            github_token: ${{ secrets.GITHUB_TOKEN }}
-                            publish_branch: gh-pages
-                            publish_dir: gh-pages
-
-                        - name: Clean up services
-                          if: always()
-                          run: cd infra && docker compose down# Swagger coverage CLI — используем рабочий URL
+      # Swagger coverage CLI — используем рабочий URL
       - name: Setup Swagger coverage CLI
         if: always()
         run: |
@@ -292,31 +204,31 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-        continue-on-error: true
+          continue-on-error: true
 
       - name: Prepare reports and index
         if: always()
         run: |
           # Базовая директория для отчётов
           mkdir -p gh-pages/test-report
-
+          
           RUN_DIR="gh-pages/test-report/${{ github.run_number }}"
           ALLURE_DIR="$RUN_DIR/allure-report"
           SWAGGER_DIR="$RUN_DIR/swagger-coverage"
-
+          
           mkdir -p "$ALLURE_DIR"
           mkdir -p "$SWAGGER_DIR"
-
+          
           # Копируем Allure-отчёт в test-report/<run>/allure-report
           if [ -d "target/site/allure-maven-plugin" ]; then
             cp -r target/site/allure-maven-plugin/* "$ALLURE_DIR"/
           fi
-
+          
           # Копируем Swagger coverage html в test-report/<run>/swagger-coverage/index.html
           if [ -f "swagger-coverage-report.html" ]; then
             cp swagger-coverage-report.html "$SWAGGER_DIR/index.html"
           fi
-
+          
           # Пересобираем корневой index.html
           cat > gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
@@ -329,14 +241,14 @@ jobs:
               <h1>Test Reports</h1>
               <ul>
           EOF
-
+          
           # Для каждого запуска две ссылки: Allure и Swagger coverage
           if [ -d "gh-pages/test-report" ]; then
             for dir in $(ls -r gh-pages/test-report/ 2>/dev/null); do
               echo "<li>Run $dir: <a href=\"test-report/$dir/allure-report/index.html\">Allure Report</a> | <a href=\"test-report/$dir/swagger-coverage/index.html\">Swagger Coverage</a></li>" >> gh-pages/index.html
             done
           fi
-
+          
           cat >> gh-pages/index.html << 'EOF'
               </ul>
           </body>
