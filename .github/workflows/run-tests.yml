@@ -219,14 +219,18 @@ jobs:
           mkdir -p "$ALLURE_DIR"
           mkdir -p "$SWAGGER_DIR"
           
-          # Копируем Allure-отчёт в test-report/<run>/allure-report
+          echo ">>> Copy Allure report (if exists)..."
           if [ -d "target/site/allure-maven-plugin" ]; then
             cp -r target/site/allure-maven-plugin/* "$ALLURE_DIR"/
+          else
+            echo "WARN: target/site/allure-maven-plugin not found, Allure report will be missing for this run."
           fi
           
-          # Копируем Swagger coverage html в test-report/<run>/swagger-coverage/index.html
+          echo ">>> Copy Swagger coverage (if exists)..."
           if [ -f "swagger-coverage-report.html" ]; then
             cp swagger-coverage-report.html "$SWAGGER_DIR/index.html"
+          else
+            echo "WARN: swagger-coverage-report.html not found, Swagger coverage will be missing for this run."
           fi
           
           # Пересобираем корневой index.html
@@ -242,10 +246,31 @@ jobs:
               <ul>
           EOF
           
-          # Для каждого запуска две ссылки: Allure и Swagger coverage
+          # Для каждого запуска динамически добавляем только те ссылки, для которых есть файлы
           if [ -d "gh-pages/test-report" ]; then
             for dir in $(ls -r gh-pages/test-report/ 2>/dev/null); do
-              echo "<li>Run $dir: <a href=\"test-report/$dir/allure-report/index.html\">Allure Report</a> | <a href=\"test-report/$dir/swagger-coverage/index.html\">Swagger Coverage</a></li>" >> gh-pages/index.html
+              LINE="Run $dir:"
+          
+              if [ -f "gh-pages/test-report/$dir/allure-report/index.html" ]; then
+                LINE="$LINE <a href=\"test-report/$dir/allure-report/index.html\">Allure Report</a>"
+              else
+                LINE="$LINE Allure Report (missing)"
+              fi
+          
+              if [ -f "gh-pages/test-report/$dir/swagger-coverage/index.html" ]; then
+                # разделитель между ссылками
+                if echo "$LINE" | grep -q "Allure Report"; then
+                  LINE="$LINE |"
+                fi
+                LINE="$LINE <a href=\"test-report/$dir/swagger-coverage/index.html\">Swagger Coverage</a>"
+              else
+                if echo "$LINE" | grep -q "Allure Report"; then
+                  LINE="$LINE |"
+                fi
+                LINE="$LINE Swagger Coverage (missing)"
+              fi
+          
+              echo "<li>$LINE</li>" >> gh-pages/index.html
             done
           fi
           
@@ -254,6 +279,12 @@ jobs:
           </body>
           </html>
           EOF
+
+      - name: Debug gh-pages tree
+        if: always()
+        run: |
+          echo "=== gh-pages root ==="
+          ls -R gh-pages || true    
 
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
