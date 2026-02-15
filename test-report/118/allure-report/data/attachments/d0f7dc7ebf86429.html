@@ -1,0 +1,31 @@
+<div>POST to http://localhost:4111/api/v1/accounts</div>
+
+    <h4>Body</h4>
+    <div>
+    <pre class="preformated-text">
+{
+    &quot;username&quot;: &quot;Lkas1ZDe6JZ&quot;,
+    &quot;password&quot;: &quot;WRHmkge374&amp;$&quot;,
+    &quot;role&quot;: &quot;USER&quot;
+}    </pre>
+    </div>
+
+    <h4>Headers</h4>
+    <div>
+            <div>Authorization: Basic TGthczFaRGU2Slo6V1JIbWtnZTM3NCYk</div>
+            <div>Accept: application/json, application/javascript, text/javascript, text/json</div>
+            <div>X-Test-Case: createUserAccount</div>
+            <div>Content-Type: application/json</div>
+    </div>
+
+
+
+    <h4>Curl</h4>
+    <div>
+        curl -v -X POST &#39;http://localhost:4111/api/v1/accounts&#39; -H &#39;Authorization: Basic TGthczFaRGU2Slo6V1JIbWtnZTM3NCYk&#39; -H &#39;Accept: application/json, application/javascript, text/javascript, text/json&#39; -H &#39;X-Test-Case: createUserAccount&#39; -H &#39;Content-Type: application/json&#39; -d &#39;{
+    &quot;username&quot;: &quot;Lkas1ZDe6JZ&quot;,
+    &quot;password&quot;: &quot;WRHmkge374&amp;$&quot;,
+    &quot;role&quot;: &quot;USER&quot;
+}&#39;
+    </div>
+
