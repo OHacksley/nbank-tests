@@ -169,27 +169,18 @@ jobs:
         run: cd infra && bash restart_docker.sh
 
       - name: Run tests
-        run: |
-          # Запускаем тесты и генерируем Allure отчет через Maven
-          ./mvnw clean test allure:report
+        run: ./mvnw clean test -Dallure.results.directory=target/allure-results
         env:
           APIBASEURL: http://localhost:4111
           UIBASEURL: http://frontend
           UIREMOTE: http://localhost:4444/wd/hub
           APIVERSION: /api/v1
 
-      - name: Check Allure report structure
+      - name: Generate Allure report
         if: always()
         run: |
-          echo "=== Checking Allure directories ==="
-          echo "target/allure-results:"
-          ls -la target/allure-results/ 2>/dev/null || echo "Not found"
-          echo ""
-          echo "target/site/allure-maven:"
-          ls -la target/site/allure-maven/ 2>/dev/null || echo "Not found"
-          echo ""
-          echo "target/site:"
-          find target/site -name "*.html" 2>/dev/null | head -10
+          ./mvnw allure:report -Dallure.results.directory=target/allure-results
+          echo "Allure report generated at: target/site/allure-maven-plugin/index.html"
 
       - name: Load test report history
         uses: actions/checkout@v4
@@ -201,143 +192,49 @@ jobs:
       - name: Setup Swagger coverage
         if: always()
         run: |
-          wget https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-1.5.0.zip
-          unzip swagger-coverage-1.5.0.zip
+          wget -q https://github.com/viclovsky/swagger-coverage/releases/download/1.5.0/swagger-coverage-commandline-1.5.0.zip
+          unzip -q swagger-coverage-commandline-1.5.0.zip
           chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
 
-      - name: Run Swagger coverage and copy report
+      - name: Run Swagger coverage
         if: always()
         run: |
-          # Запускаем swagger-coverage
-          ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
-            -s http://localhost:4111/v3/api-docs \
-            -i target/swagger-coverage-output
+          ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline -s http://localhost:4111/v3/api-docs -i target/swagger-coverage-output
 
-          # Создаем директорию для swagger-coverage отчета
-          mkdir -p gh-pages/test-report/${{ github.run_number }}/swagger-coverage
-
-          # Копируем файлы отчета swagger-coverage
-          cp swagger-coverage-report.html gh-pages/test-report/${{ github.run_number }}/swagger-coverage/ || echo "Swagger HTML report not found"
-
-      - name: Copy Allure report from Maven site
+      - name: Prepare reports directory
         if: always()
         run: |
-          # Создаем директорию для Allure отчета
-          mkdir -p gh-pages/test-report/${{ github.run_number }}/allure-report
+          mkdir -p gh-pages/test-report/${{ github.run_number }}
           
-          # Копируем Allure отчет из Maven site directory
-          if [ -d "target/site/allure-maven" ]; then
-            echo "Copying Allure report from Maven site..."
-            cp -r target/site/allure-maven/* gh-pages/test-report/${{ github.run_number }}/allure-report/
+          # Копируем Allure отчет
+          if [ -d "target/site/allure-maven-plugin" ]; then
+            cp -r target/site/allure-maven-plugin/* gh-pages/test-report/${{ github.run_number }}/
+          fi
           
-            # Переименовываем основной файл отчета
-            if [ -f "gh-pages/test-report/${{ github.run_number }}/allure-report/index.html" ]; then
-              echo "Allure report index.html found"
-            else
-              # Ищем главный HTML файл отчета
-              find gh-pages/test-report/${{ github.run_number }}/allure-report -name "*.html" | head -5
-            fi
-          else
-            echo "Maven Allure site not found, trying alternative locations..."
-          
-            # Альтернативные возможные пути
-            if [ -d "target/allure-report" ]; then
-              echo "Found target/allure-report, copying..."
-              cp -r target/allure-report/* gh-pages/test-report/${{ github.run_number }}/allure-report/
-            elif [ -d "target/site" ]; then
-              echo "Found target/site, searching for Allure files..."
-              find target/site -name "*allure*" -type d | head -5
-            fi
-          
-            # Создаем заглушку если отчет не найден
-            cat > gh-pages/test-report/${{ github.run_number }}/allure-report/index.html << EOF
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Allure Report - Not Found</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 40px; text-align: center; }
-                    h1 { color: #d9534f; }
-                </style>
-            </head>
-            <body>
-                <h1>⚠️ Allure Report Not Found</h1>
-                <p>Allure report was not generated properly</p>
-                <p>Checked directories:</p>
-                <ul style="text-align: left; display: inline-block;">
-                    <li>target/site/allure-maven</li>
-                    <li>target/allure-report</li>
-                    <li>target/site</li>
-                </ul>
-            </body>
-            </html>
-            EOF
+          # Копируем Swagger coverage отчет
+          if [ -f "swagger-coverage-report.html" ]; then
+            cp swagger-coverage-report.html gh-pages/test-report/${{ github.run_number }}/
           fi
 
-      - name: Debug final structure
+      - name: Update index page
         if: always()
         run: |
-          echo "=== Final report structure ==="
-          find gh-pages/test-report/${{ github.run_number }} -type f -name "*.html" | sort
-          echo ""
-          echo "=== Allure report contents ==="
-          ls -la gh-pages/test-report/${{ github.run_number }}/allure-report/ 2>/dev/null || echo "Allure report directory not found"
-
-      - name: Create or update index.html
-        if: always()
-        run: |
-          # Создаем/обновляем index.html с навигацией по всем отчетам
           cat > gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
               <title>Test Reports</title>
-              <style>
-                  body { font-family: Arial, sans-serif; margin: 40px; }
-                  h1 { color: #333; }
-                  ul { list-style-type: none; padding: 0; }
-                  li { margin: 10px 0; }
-                  a { text-decoration: none; color: #0366d6; }
-                  a:hover { text-decoration: underline; }
-                  .missing { color: red; }
-                  .success { color: green; }
-              </style>
           </head>
           <body>
               <h1>Test Reports</h1>
               <ul>
           EOF
           
-          # Добавляем ссылки на все существующие отчеты
+          # Добавляем ссылки на все отчеты
           if [ -d "gh-pages/test-report" ]; then
-            for dir in $(ls -r gh-pages/test-report/ 2>/dev/null || echo ""); do
-              echo "<li>Run $dir: " >> gh-pages/index.html
-          
-              # Проверяем существование Allure отчета
-              allure_index=$(find "gh-pages/test-report/$dir/allure-report" -name "index.html" 2>/dev/null | head -1)
-              if [ -n "$allure_index" ]; then
-                echo "<a href=\"test-report/$dir/allure-report/index.html\" class=\"success\">Allure Report</a> | " >> gh-pages/index.html
-              else
-                # Ищем любой HTML файл в allure-report
-                allure_html=$(find "gh-pages/test-report/$dir/allure-report" -name "*.html" 2>/dev/null | head -1)
-                if [ -n "$allure_html" ]; then
-                  html_name=$(basename "$allure_html")
-                  echo "<a href=\"test-report/$dir/allure-report/$html_name\" class=\"success\">Allure Report</a> | " >> gh-pages/index.html
-                else
-                  echo "<span class='missing'>Allure Report missing</span> | " >> gh-pages/index.html
-                fi
-              fi
-          
-              if [ -f "gh-pages/test-report/$dir/swagger-coverage/swagger-coverage-report.html" ]; then
-                echo "<a href=\"test-report/$dir/swagger-coverage/swagger-coverage-report.html\" class=\"success\">Swagger Coverage</a>" >> gh-pages/index.html
-              else
-                echo "<span class='missing'>Swagger Coverage missing</span>" >> gh-pages/index.html
-              fi
-          
-              echo "</li>" >> gh-pages/index.html
+            for dir in $(ls -r gh-pages/test-report/ 2>/dev/null); do
+              echo "<li><a href=\"test-report/$dir/index.html\">Run $dir - Allure Report</a></li>" >> gh-pages/index.html
             done
-          else
-            echo "<li>No test reports found</li>" >> gh-pages/index.html
           fi
           
           cat >> gh-pages/index.html << 'EOF'
@@ -353,7 +250,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: gh-pages
-          force_orphan: false
 
       - name: Clean up services
         if: always()
