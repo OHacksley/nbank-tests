@@ -169,16 +169,14 @@ jobs:
       - name: Set up services
         run: cd infra && bash restart_docker.sh && cd ..
 
-      # 5. Запуск тестов
       - name: Run tests
-        run: ./mvnw clean test -q
+        run: ./mvnw clean test -q -Dallure.results.directory=target/allure-results
         env:
           APIBASEURL: http://localhost:4111
           UIBASEURL: http://frontend
           UIREMOTE: http://localhost:4444/wd/hub
           APIVERSION: /api/v1
 
-      # 6. Скачиваем Swagger coverage CLI
       - name: Setup Swagger coverage CLI
         if: always()
         run: |
@@ -186,7 +184,6 @@ jobs:
           unzip -q swagger-coverage-commandline-1.5.0.zip
           chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
 
-      # 7. Запускаем Swagger coverage (создаёт swagger-coverage-report.html в корне)
       - name: Run Swagger coverage
         if: always()
         run: |
@@ -194,8 +191,13 @@ jobs:
             -s http://localhost:4111/v3/api-docs \
             -i target/swagger-coverage-output
 
-      # 8. Подгружаем историю отчётов из ветки gh-pages (если есть)
-      - name: Load test report history
+      - name: Generate Allure report
+        if: always()
+        run: |
+          ./mvnw allure:report -Dallure.results.directory=target/allure-results
+          echo "Allure report generated at: target/site/allure-maven-plugin/index.html"
+
+      - name: Load gh-pages history
         uses: actions/checkout@v4
         if: always()
         with:
@@ -203,34 +205,64 @@ jobs:
           path: gh-pages
         continue-on-error: true
 
-      # 9. Генерим Allure отчёт + историю в allure-history
-      - name: Build Allure report with history
-        uses: simple-elf/allure-report-action@v1.7
-        if: always()
-        with:
-          gh_pages: gh-pages               # куда уже выкачали историю
-          allure_results: target/allure-results
-          allure_history: allure-history   # локальная папка, будет содержать index.html и историю
-
-      # 10. Кладём Swagger coverage отчёт в папку текущего прогона
-      - name: Attach Swagger coverage report to history
+      - name: Prepare reports and index
         if: always()
         run: |
-          if [ -f "swagger-coverage-report.html" ]; then
-            mkdir -p allure-history/${{ github.run_number }}
-            cp swagger-coverage-report.html allure-history/${{ github.run_number }}/
+          # Базовая директория для отчётов
+          mkdir -p gh-pages/test-report
+
+          RUN_DIR="gh-pages/test-report/${{ github.run_number }}"
+          ALLURE_DIR="$RUN_DIR/allure-report"
+          SWAGGER_DIR="$RUN_DIR/swagger-coverage"
+
+          mkdir -p "$ALLURE_DIR"
+          mkdir -p "$SWAGGER_DIR"
+
+          # Копируем Allure-отчёт в test-report/<run>/allure-report
+          if [ -d "target/site/allure-maven-plugin" ]; then
+            cp -r target/site/allure-maven-plugin/* "$ALLURE_DIR"/
           fi
 
-      # 11. Публикуем allure-history как содержимое ветки gh-pages
+          # Копируем Swagger coverage html в test-report/<run>/swagger-coverage
+          if [ -f "swagger-coverage-report.html" ]; then
+            # Переименуем в index.html, чтобы было красиво по URL
+            cp swagger-coverage-report.html "$SWAGGER_DIR/index.html"
+          fi
+
+          # Пересобираем корневой index.html
+          cat > gh-pages/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <title>Test Reports</title>
+          </head>
+          <body>
+              <h1>Test Reports</h1>
+              <ul>
+          EOF
+
+          # Для каждого запуска даём две ссылки: Allure и Swagger coverage
+          if [ -d "gh-pages/test-report" ]; then
+            for dir in $(ls -r gh-pages/test-report/ 2>/dev/null); do
+              echo "<li>Run $dir: <a href=\"test-report/$dir/allure-report/index.html\">Allure Report</a> | <a href=\"test-report/$dir/swagger-coverage/index.html\">Swagger Coverage</a></li>" >> gh-pages/index.html
+            done
+          fi
+
+          cat >> gh-pages/index.html << 'EOF'
+              </ul>
+          </body>
+          </html>
+          EOF
+
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@v3
         if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: allure-history
+          publish_dir: gh-pages
 
-      # 12. Гасим сервисы
       - name: Clean up services
         if: always()
         run: cd infra && docker compose down
