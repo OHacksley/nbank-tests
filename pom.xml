@@ -227,7 +227,7 @@
                 <configuration>
                     <reportVersion>${allure.version}</reportVersion>
                     <!-- директория с результатами в корне проекта -->
-                    <resultsDirectory>${project.basedir}/allure-results</resultsDirectory>
+                    <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
                     <!-- директория готового HTML-отчёта -->
                     <reportDirectory>${project.build.directory}/site/allure-maven-plugin</reportDirectory>
                 </configuration>

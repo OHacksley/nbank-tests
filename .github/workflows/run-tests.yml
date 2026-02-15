@@ -185,12 +185,25 @@ jobs:
           unzip -q swagger-coverage-1.5.0.zip
           chmod +x swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline
 
+      - name: Debug allure-results
+        if: always()
+        run: |
+          echo "=== target ==="
+          ls -R target || true
+
+          echo "=== target/allure-results ==="
+            if [ -d "target/allure-results" ]; then
+              ls -R target/allure-results
+          else
+            echo "target/allure-results NOT FOUND"
+          fi
+
       - name: Run Swagger coverage
         if: always()
         run: |
           ./swagger-coverage-commandline-1.5.0/bin/swagger-coverage-commandline \
-            -s http://localhost:4111/v3/api-docs \
-            -i target/swagger-coverage-output
+          -s http://localhost:4111/v3/api-docs \
+          -i target/swagger-coverage-output
 
       - name: Generate Allure report
         if: always()
